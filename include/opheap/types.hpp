@@ -39,6 +39,15 @@ struct heap_config {
     std::size_t checkpoint_journal_bytes{64U * 1024U * 1024U};
     durability_mode durability{durability_mode::strict};
     bool checksums{true};
+    std::size_t cache_bytes{8U * 1024U * 1024U};
+};
+
+struct cache_info {
+    std::size_t bytes{};
+    std::size_t entries{};
+    std::uint64_t hits{};
+    std::uint64_t misses{};
+    std::uint64_t evictions{};
 };
 
 struct integrity_report {

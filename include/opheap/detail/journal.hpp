@@ -7,16 +7,26 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace opheap::detail {
 
+enum class source : std::uint8_t { snapshot, journal };
+
+struct loc {
+    source kind{};
+    std::uint64_t offset{};
+    std::uint64_t size{};
+    std::uint32_t checksum{};
+};
+
 struct root_record {
     version_type version{};
     std::string type;
-    std::vector<std::byte> payload;
+    loc payload;
 };
 
 struct root_update {
@@ -45,8 +55,11 @@ public:
                             sequence_number snapshot_sequence,
                             bool truncate_torn_tail);
 
-    void append(transaction_id tx,
-                const std::vector<root_update>& updates);
+    [[nodiscard]] std::vector<loc> append(transaction_id tx,
+                                          const std::vector<root_update>& updates);
+
+    void read(const loc& where, std::uint64_t offset, std::span<std::byte> out) const;
+    [[nodiscard]] std::vector<std::byte> load(const loc& where) const;
 
     void reset();
 

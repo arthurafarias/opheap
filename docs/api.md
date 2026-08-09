@@ -14,8 +14,11 @@ transaction begin();
 void checkpoint();
 integrity_report check_integrity() const noexcept;
 std::size_t root_count() const noexcept;
+cache_info cache() const noexcept;
 void close() noexcept;
 ```
+
+`heap_config::cache_bytes` bounds retained committed payload bytes. `heap::cache()` reports resident bytes/entries plus hit, miss and eviction counters. Payloads larger than the configured cache are still demand loaded, but are not retained after the active access path releases them.
 
 ## `transaction`
 

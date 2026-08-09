@@ -1,11 +1,11 @@
 #include "opheap/heap.hpp"
 
 #include "opheap/codec.hpp"
+#include "opheap/detail/cache.hpp"
 #include "opheap/detail/journal.hpp"
 #include "opheap/detail/snapshot.hpp"
 
 #include <atomic>
-#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -19,7 +19,7 @@ namespace opheap::detail {
 class heap_state {
 public:
     heap_state(heap_config config, std::shared_ptr<storage_backend> storage)
-        : config(std::move(config)), storage(std::move(storage)) {
+        : config(std::move(config)), storage(std::move(storage)), cache(this->config.cache_bytes) {
         if (this->config.path.empty()) throw storage_error("heap path must not be empty");
         this->storage->create_directories(this->config.path);
         snapshot = std::make_unique<snapshot_store>(
@@ -37,18 +37,51 @@ public:
 
     struct loaded_root {
         version_type version{};
-        std::vector<std::byte> payload;
+        std::shared_ptr<const std::vector<std::byte>> payload;
         bool exists{};
     };
 
-    loaded_root load(std::string_view name) const {
-        std::shared_lock lock{roots_mutex};
-        auto found = roots.find(std::string{name});
-        if (found == roots.end()) return {};
-        if (found->second.type != codec<value>::type_name) {
-            throw type_error("root type is not opheap::value: " + std::string{name});
+    loaded_root load(std::string_view name) {
+        root_record record;
+        {
+            std::shared_lock lock{roots_mutex};
+            auto found = roots.find(std::string{name});
+            if (found == roots.end()) return {};
+            if (found->second.type != codec<value>::type_name) {
+                throw type_error("root type is not opheap::value: " + std::string{name});
+            }
+            record = found->second;
         }
-        return {found->second.version, found->second.payload, true};
+
+        if (auto cached = cache.get(name, record.version)) {
+            return {record.version, std::move(cached), true};
+        }
+
+        // A cache miss must pin the locator generation against checkpoint/WAL reclaim.
+        // Re-read metadata after taking the commit lock in case a commit or checkpoint
+        // changed the root between the optimistic lookup above and this point.
+        std::lock_guard commit_guard{commit_mutex};
+        {
+            std::shared_lock lock{roots_mutex};
+            auto found = roots.find(std::string{name});
+            if (found == roots.end()) return {};
+            record = found->second;
+        }
+
+        auto bytes = load_payload(record.payload);
+        auto cached = cache.put(std::string{name}, record.version, std::move(bytes));
+        return {record.version, std::move(cached), true};
+    }
+
+    void read_payload(const root_record& record, std::uint64_t offset,
+                      std::span<std::byte> out) const {
+        if (record.payload.kind == source::snapshot) snapshot->read(record.payload, offset, out);
+        else wal->read(record.payload, offset, out);
+    }
+
+    std::vector<std::byte> load_payload(const loc& where) const {
+        if (where.kind == source::snapshot) return snapshot->load(where);
+        return wal->load(where);
     }
 
     void commit(transaction_id tx, std::vector<root_update> updates) {
@@ -68,8 +101,9 @@ public:
             }
         }
 
+        std::vector<loc> locations;
         try {
-            wal->append(tx, updates);
+            locations = wal->append(tx, updates);
         } catch (...) {
             poisoned.store(true, std::memory_order_release);
             throw;
@@ -77,9 +111,12 @@ public:
 
         {
             std::unique_lock lock{roots_mutex};
-            for (auto& update : updates) {
+            for (std::size_t i = 0; i < updates.size(); ++i) {
+                auto& update = updates[i];
                 roots[update.name] = root_record{
-                    update.new_version, std::move(update.type), std::move(update.payload)};
+                    update.new_version, update.type, locations.at(i)};
+                [[maybe_unused]] auto retained = cache.put(
+                    update.name, update.new_version, std::move(update.payload));
             }
             last_sequence = wal->last_sequence();
         }
@@ -100,9 +137,19 @@ public:
             image.roots = roots;
             image.sequence = wal->last_sequence();
         }
-        snapshot->save(image);
+
+        auto written = snapshot->save(image, [this](const root_record& record,
+                                                    std::uint64_t offset,
+                                                    std::span<std::byte> out) {
+            read_payload(record, offset, out);
+        });
+
+        {
+            std::unique_lock lock{roots_mutex};
+            roots = std::move(written.roots);
+            last_sequence = written.sequence;
+        }
         wal->reset();
-        last_sequence = image.sequence;
     }
 
     integrity_report integrity() const noexcept {
@@ -110,6 +157,16 @@ public:
             auto image = snapshot->load();
             journal verifier{config.path / "heap.wal", storage, config.durability, config.checksums};
             auto recovered = verifier.recover(std::move(image.roots), image.sequence, false);
+
+            for (const auto& [name, record] : recovered.roots) {
+                (void)name;
+                if (record.payload.kind == source::snapshot) {
+                    [[maybe_unused]] auto payload = snapshot->load(record.payload);
+                } else {
+                    [[maybe_unused]] auto payload = verifier.load(record.payload);
+                }
+            }
+
             integrity_report report;
             report.roots = recovered.roots.size();
             report.journal_records = recovered.records;
@@ -128,6 +185,7 @@ public:
     std::shared_ptr<storage_backend> storage;
     std::unique_ptr<snapshot_store> snapshot;
     std::unique_ptr<journal> wal;
+    payload_cache cache;
     mutable std::shared_mutex roots_mutex;
     std::mutex commit_mutex;
     std::unordered_map<std::string, root_record> roots;
@@ -181,7 +239,7 @@ value& transaction::root(std::string_view name) {
     auto loaded = impl_->state->load(name);
     value root_value{&impl_->pool};
     if (loaded.exists) {
-        detail::reader reader{loaded.payload};
+        detail::reader reader{std::span<const std::byte>{*loaded.payload}};
         root_value = codec<value>::decode(reader, &impl_->pool);
         if (!reader.eof()) throw corruption_error("root payload contains trailing bytes");
     }
@@ -190,7 +248,7 @@ value& transaction::root(std::string_view name) {
         std::string{name}, loaded.version, std::move(root_value));
     const auto token = static_cast<root_token>(impl_->roots.size() + 1);
     entry->data.bind({this, token});
-    entry->dirty = !loaded.exists; // creating a previously absent root is a logical mutation
+    entry->dirty = !loaded.exists;
     impl_->by_name.emplace(entry->name, token);
     impl_->roots.push_back(std::move(entry));
     return impl_->roots.back()->data;
@@ -220,7 +278,7 @@ void transaction::commit() {
             std::string{codec<value>::type_name},
             std::move(writer).take()});
     }
-    impl_->state->commit(impl_->transaction, updates);
+    impl_->state->commit(impl_->transaction, std::move(updates));
     impl_->active = false;
 }
 
@@ -257,6 +315,10 @@ std::size_t heap::root_count() const noexcept {
     if (!state_) return 0;
     std::shared_lock lock{state_->roots_mutex};
     return state_->roots.size();
+}
+cache_info heap::cache() const noexcept {
+    if (!state_) return {};
+    return state_->cache.info();
 }
 void heap::close() noexcept {
     if (state_) state_->closed.store(true, std::memory_order_release);

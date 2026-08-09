@@ -203,7 +203,7 @@ Transactions shall support:
 
 A transaction shall materialize each named root on first access into transaction-owned volatile memory.
 
-Uncommitted mutation shall not modify the committed global root cache.
+Uncommitted mutation shall not modify the committed locator index or shared payload cache.
 
 ### 7.3 Dirty tracking
 
@@ -248,7 +248,7 @@ The durable store shall contain at minimum:
 - snapshot/checkpoint file;
 - append-only journal file.
 
-The committed in-process cache shall be reconstructible from these durable files.
+The committed in-process root index shall be reconstructible from these durable files. Root payloads shall not need to be materialized during startup.
 
 ## 10. Journal requirements
 
@@ -299,9 +299,10 @@ For a transaction with dirty state, the system shall:
 5. append all ROOT_UPDATE records;
 6. append COMMIT;
 7. execute the configured durability barrier;
-8. publish new committed root versions to the volatile cache;
-9. release commit ordering;
-10. return success.
+8. publish new committed root versions and payload locators to the resident index;
+9. admit the encoded payload to the bounded cache if it fits;
+10. release commit ordering;
+11. return success.
 
 A strict commit shall not return success before the persistence barrier succeeds.
 
@@ -321,7 +322,7 @@ Startup shall:
 - detect a partial final record as a torn tail;
 - truncate the torn tail to the last valid byte when opening for normal operation;
 - reject checksum corruption in a complete record;
-- reconstruct committed root versions;
+- reconstruct committed root versions and payload locators without retaining all payload bytes;
 - make repeated recovery idempotent.
 
 ## 13. Checkpoint requirements
@@ -329,7 +330,7 @@ Startup shall:
 Checkpoint shall:
 
 1. capture a consistent committed-root image and current journal sequence;
-2. write a temporary snapshot;
+2. write a temporary snapshot containing a compact locator index and payload area;
 3. synchronize snapshot contents in strict mode;
 4. atomically replace the old snapshot;
 5. synchronize the directory entry where supported;
@@ -344,7 +345,8 @@ The library shall expose an integrity check returning a report rather than requi
 
 Integrity checking shall validate:
 
-- snapshot checksum and framing;
+- snapshot header/index checksums and framing;
+- root payload checksums during full integrity scans and on-demand reads;
 - WAL framing;
 - WAL checksums;
 - transaction begin/commit structure;
@@ -400,7 +402,7 @@ The architecture shall optimize for:
 - coalesced write sets;
 - low durable commit latency;
 - bounded recovery time through checkpointing;
-- future lazy materialization/eviction;
+- bounded demand-loaded committed payload caching;
 - future granularity finer than a complete root.
 
 Performance work shall not weaken documented durability semantics.
@@ -417,7 +419,7 @@ Benchmarks shall include:
 - same-root contention;
 - checkpoint latency;
 - recovery latency;
-- cold/warm/hot cache behavior once bounded caching exists.
+- cold/warm/hot bounded-cache behavior.
 
 External comparisons shall record hardware, OS, compiler, storage, configuration, cache state, transaction size and durability mode.
 
@@ -500,7 +502,7 @@ The MVP is acceptable when:
 Version 1.0 additionally requires:
 
 - deterministic barrier/write fault injection across the full commit/checkpoint state machine;
-- bounded cache with safe pin/eviction semantics;
+- bounded cache with safe active-reference lifetime across eviction;
 - finer-grained versioning than whole-root replacement for large datasets;
 - stable format compatibility/migration policy;
 - benchmark adapters and reproducible external comparisons;

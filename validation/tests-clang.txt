@@ -6,6 +6,8 @@
 [PASS] heap::checkpoint bounds journal and recovery remains idempotent
 [PASS] heap::integrity detects checksum corruption
 [PASS] heap::multiple threads commit independent roots
+[PASS] heap::checkpoint reopen loads roots on demand through bounded cache
+[PASS] heap::oversized root is demand loaded but never retained by cache
 [PASS] heap::independent roots can commit from concurrent snapshots
 [PASS] journal::replays only committed root replacement
 [PASS] journal::torn commit does not publish transaction
@@ -17,7 +19,7 @@
 [PASS] property::assignment and arithmetic are observable
 [PASS] property::equal assignment is coalesced
 [PASS] property::mutate closes the mutable escape hatch
-[PASS] snapshot::save and load image
+[PASS] snapshot::save and load locator index without materializing payload
 [PASS] storage::append read truncate and flush
 [PASS] storage::atomic replace
 [PASS] string::mutations notify
@@ -31,4 +33,4 @@
 [PASS] vector::structure and element changes notify
 [PASS] vector::reallocation keeps child bindings
 
-32 passed, 0 failed
+34 passed, 0 failed

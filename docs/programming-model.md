@@ -59,7 +59,7 @@ opheap::vector<opheap::property<int>> counters;
 
 ## Transactions
 
-A transaction owns a PMR pool and decoded working copies of roots requested by the application. A root is decoded only on first access.
+A transaction owns a PMR pool and decoded working copies of roots requested by the application. The committed heap keeps only root metadata resident at startup. A root payload is fetched from its snapshot/WAL locator and decoded only on first access; the encoded payload may then remain in the bounded shared cache for later transactions.
 
 ```cpp
 auto tx = heap.begin();

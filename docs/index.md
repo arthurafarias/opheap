@@ -51,3 +51,5 @@ A C++ allocator can see allocation and deallocation, but it cannot intercept an 
 - [Roadmap](roadmap.md)
 - [References](references.md)
 - [Validation record](validation.md)
+
+- [0.2 demand-loading commit plan](COMMIT_PLAN_0.2.md)

@@ -18,15 +18,23 @@ title: Roadmap
 - sanitizer configuration;
 - GitHub Pages documentation.
 
-## 0.2 — granularity
+## 0.2 — demand-loaded committed state
+
+- locator-only resident root index;
+- bounded LRU cache for encoded committed payloads;
+- lazy root payload materialization;
+- chunked checkpoint copy independent of total dataset size;
+- cache accounting through `heap::cache()`.
+
+## 0.3 — granularity
 
 - independently versioned extents below a logical root;
 - dirty path/range coalescing;
-- lazy materialization of cold branches;
-- cache accounting and eviction/pinning handles;
+- lazy materialization of cold branches within a large root;
+- extent pinning/handles;
 - allocator size classes.
 
-## 0.3 — performance
+## 0.4 — performance
 
 - journal group commit;
 - batched checksums;
@@ -35,14 +43,14 @@ title: Roadmap
 - recovery index/checkpoint acceleration;
 - benchmark adapters for SQLite/LMDB/RocksDB.
 
-## 0.4 — typed models
+## 0.5 — typed models
 
 - public codec/schema extension mechanism;
 - reflection-assisted member registration when compiler support is practical;
 - stable schema identifiers and migration hooks;
 - optional persistent references for non-tree graphs.
 
-## 0.5 — service examples
+## 0.6 — service examples
 
 - Boost.Beast credentials service;
 - durable session/index example;
@@ -50,4 +58,4 @@ title: Roadmap
 
 ## 1.0
 
-Requires a complete crash-fault matrix, format-compatibility policy, bounded-cache implementation, reproducible benchmark matrix and explicit upgrade/migration tooling.
+Requires a complete crash-fault matrix, stable format-compatibility policy, extent-level granularity, reproducible benchmark matrix and explicit upgrade/migration tooling.

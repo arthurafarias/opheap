@@ -4,7 +4,10 @@
 #include "opheap/storage.hpp"
 
 #include <filesystem>
+#include <functional>
 #include <memory>
+#include <span>
+#include <unordered_map>
 
 namespace opheap::detail {
 
@@ -15,6 +18,8 @@ struct snapshot_image {
 
 class snapshot_store {
 public:
+    using payload_reader = std::function<void(const root_record&, std::uint64_t, std::span<std::byte>)>;
+
     snapshot_store(std::filesystem::path path,
                    std::shared_ptr<storage_backend> storage,
                    durability_mode durability,
@@ -23,7 +28,11 @@ public:
           durability_(durability), checksums_(checksums) {}
 
     [[nodiscard]] snapshot_image load() const;
-    void save(const snapshot_image& image) const;
+    [[nodiscard]] snapshot_image save(const snapshot_image& image,
+                                      const payload_reader& read) const;
+
+    void read(const loc& where, std::uint64_t offset, std::span<std::byte> out) const;
+    [[nodiscard]] std::vector<std::byte> load(const loc& where) const;
 
 private:
     std::filesystem::path path_;

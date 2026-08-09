@@ -32,13 +32,18 @@ Transaction-local PMR working set
              persistence barrier
                     │
                     ▼
-             published version
+        root metadata + locator index
                     │
-                    ▼
+          ┌─────────┴─────────┐
+          ▼                   ▼
+ bounded payload cache   snapshot / WAL
+          │                   │
+          └──── demand load ──┘
+                    │
                 checkpoint
                     │
                     ▼
-              snapshot file
+       indexed snapshot + payload area
 ```
 
 ## Components
@@ -56,12 +61,13 @@ Transaction-local PMR working set
 | `observing_resource` | PMR allocator decorator for allocation/deallocation events. |
 | `transaction` | Observer, working-set owner, dirty-set owner, OCC participant. |
 | `journal` | Ordered crash-consistent transaction log. |
-| `snapshot_store` | Atomic checkpoint image. |
+| `payload_cache` | Bounded LRU of encoded committed root payloads; active readers pin through shared ownership. |
+| `snapshot_store` | Indexed checkpoint image; metadata is loaded eagerly, payloads are read by locator. |
 | `heap` | Lifecycle, recovery, commit ordering and integrity API. |
 
 ## Why root-level versioning first
 
-The initial implementation versions named logical roots rather than individual fields or heap pages. This gives a simple correctness model:
+The current implementation versions named logical roots rather than individual fields or heap pages. This gives a simple correctness model:
 
 - transaction working copies are isolated;
 - observer events collapse into one dirty bit per root;
@@ -84,3 +90,8 @@ The architecture is conceptually related to:
 - persistent allocators such as Metall: C++ data structures can be built directly over persistence-oriented memory allocators.
 
 `opheap` combines those ideas with explicit transactions and a portable WAL rather than requiring byte-addressable persistent memory hardware.
+
+
+## Demand-loaded committed state
+
+`heap_state` no longer owns a `name -> payload` map. It owns `name -> {version, type, loc}` metadata. A transaction first probes the bounded payload cache; on a miss the locator is read from either the snapshot or WAL and the encoded root is decoded into that transaction's PMR pool. Checkpoints stream payloads in fixed-size chunks, so checkpoint memory use is bounded independently of durable dataset size.

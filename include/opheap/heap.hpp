@@ -56,6 +56,7 @@ public:
     void checkpoint();
     [[nodiscard]] integrity_report check_integrity() const noexcept;
     [[nodiscard]] std::size_t root_count() const noexcept;
+    [[nodiscard]] cache_info cache() const noexcept;
     void close() noexcept;
 
 private:

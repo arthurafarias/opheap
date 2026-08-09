@@ -79,6 +79,68 @@ inline static test_group heap_test{"heap", {
                       static_cast<std::int64_t>(thread));
         }
     }},
+    {"checkpoint reopen loads roots on demand through bounded cache", [](test_context& ctx) {
+        auto directory = temporary_directory("lazy-cache");
+        const std::string payload(900, 'x');
+        {
+            auto heap = opheap::heap::open({.path = directory, .cache_bytes = 1300});
+            for (const auto* name : {"a", "b", "c"}) {
+                auto tx = heap.begin();
+                tx.object_root(name)["data"] = payload;
+                tx.commit();
+            }
+            heap.checkpoint();
+        }
+
+        auto heap = opheap::heap::open({.path = directory, .cache_bytes = 1300});
+        ctx.equal(heap.root_count(), std::size_t{3});
+        ctx.equal(heap.cache().bytes, std::size_t{0});
+        ctx.equal(heap.cache().entries, std::size_t{0});
+
+        {
+            auto tx = heap.begin();
+            ctx.equal(tx.object_root("a").at("data").as_string().size(), payload.size());
+        }
+        const auto after_a = heap.cache();
+        ctx.equal(after_a.entries, std::size_t{1});
+        ctx.check(after_a.bytes <= 1300);
+        ctx.equal(after_a.misses, std::uint64_t{1});
+
+        {
+            auto tx = heap.begin();
+            ctx.equal(tx.object_root("a").at("data").as_string().size(), payload.size());
+        }
+        ctx.equal(heap.cache().hits, std::uint64_t{1});
+
+        {
+            auto tx = heap.begin();
+            (void)tx.object_root("b").at("data").as_string().size();
+        }
+        {
+            auto tx = heap.begin();
+            (void)tx.object_root("c").at("data").as_string().size();
+        }
+        const auto bounded = heap.cache();
+        ctx.check(bounded.bytes <= 1300);
+        ctx.equal(bounded.entries, std::size_t{1});
+        ctx.check(bounded.evictions >= 2);
+    }},
+    {"oversized root is demand loaded but never retained by cache", [](test_context& ctx) {
+        auto directory = temporary_directory("oversized-cache");
+        const std::string payload(4096, 'z');
+        {
+            auto heap = opheap::heap::open({.path = directory, .cache_bytes = 512});
+            auto tx = heap.begin();
+            tx.object_root()["data"] = payload;
+            tx.commit();
+            heap.checkpoint();
+        }
+        auto heap = opheap::heap::open({.path = directory, .cache_bytes = 512});
+        auto tx = heap.begin();
+        ctx.equal(tx.object_root().at("data").as_string().size(), payload.size());
+        ctx.equal(heap.cache().bytes, std::size_t{0});
+        ctx.equal(heap.cache().entries, std::size_t{0});
+    }},
     {"independent roots can commit from concurrent snapshots", [](test_context& ctx) {
         auto directory = temporary_directory("roots");
         auto heap = opheap::heap::open({.path = directory});

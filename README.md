@@ -7,7 +7,10 @@
 The programming goal is intentionally ordinary:
 
 ```cpp
-opheap::heap state = opheap::heap::open({.path = "service-state"});
+opheap::heap state = opheap::heap::open({
+    .path = "service-state",
+    .cache_bytes = 8 * 1024 * 1024
+});
 
 {
     auto tx = state.begin();
@@ -127,19 +130,22 @@ That lets a service express its entire logical state as nested maps/arrays witho
 
 ## Persistence model
 
-Version 0.1 uses:
+Version 0.2 uses:
 
 - transaction-local PMR working sets;
 - named Variant roots;
 - observer-driven dirty-root tracking;
 - optimistic root-version conflict detection;
+- a resident root index containing only names, versions, type tags and payload locators;
+- demand loading of root payloads from the snapshot or WAL only when a transaction first touches that root;
+- a bounded LRU payload cache configured with `heap_config::cache_bytes`;
 - an append-only checksummed write-ahead journal;
 - a persistence barrier before successful commit returns;
-- atomic snapshot replacement for checkpoints;
+- indexed snapshots whose payload section is copied in bounded chunks during checkpoint;
 - version-aware WAL replay so a pre-checkpoint journal can safely survive an interrupted checkpoint;
 - truncated-tail detection and committed-record checksum validation.
 
-The first version intentionally persists at **logical-root granularity**. The public observer interface is designed so later implementations can split roots into objects, extents, cache lines, or pages without changing application code.
+Persistence is still at **logical-root granularity** in 0.2. The important change is that the heap no longer materializes every committed payload at `open()`. Only metadata is resident until a root is accessed. The observer interface still allows later commits to split roots into objects, extents, cache lines, or pages without changing application code.
 
 ## Crash semantics
 
@@ -263,7 +269,7 @@ See [`docs/credentials-service.md`](docs/credentials-service.md).
 
 ## Project status
 
-Version `0.1.0` is a testable architectural MVP. The durability protocol, observer model, Variant tree, STL-shaped containers, checkpoint/recovery path and optimistic conflicts are implemented. The most important next performance step is to split large logical roots into independently versioned persistent extents while preserving this API.
+Version `0.2.0` adds locator-backed demand loading and a bounded committed-payload cache while preserving the 0.1 public programming model. Opening a checkpointed heap loads the compact root index but not root payloads; a cache miss reads only the requested root. The next granularity step is to split large logical roots into independently addressable extents so that access to one branch does not require decoding the whole root.
 
 ## Design lineage and references
 
@@ -276,4 +282,4 @@ These are architectural precedents, not claims that `opheap` duplicates any one 
 
 ## License
 
-No license is imposed by this generated prototype. Add the license you want before publishing or accepting external contributions.
+Proprietary.
