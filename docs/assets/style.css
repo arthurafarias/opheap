@@ -1,0 +1,27 @@
+:root { color-scheme: light dark; --max: 1080px; --accent: #4969ff; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.65; }
+.wrap { width: min(calc(100% - 2rem), var(--max)); margin: 0 auto; }
+.site-header { border-bottom: 1px solid color-mix(in srgb, currentColor 16%, transparent); position: sticky; top: 0; backdrop-filter: blur(14px); background: color-mix(in srgb, Canvas 90%, transparent); z-index: 4; }
+.site-header .wrap { display: flex; gap: 2rem; align-items: center; min-height: 64px; }
+.brand { font-weight: 800; font-size: 1.2rem; text-decoration: none; color: inherit; }
+nav { display: flex; flex-wrap: wrap; gap: 1rem; }
+nav a { color: inherit; text-decoration: none; opacity: .78; }
+nav a:hover { opacity: 1; }
+.content { padding: 3rem 0 6rem; }
+h1 { font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1; letter-spacing: -.045em; max-width: 14ch; }
+h2 { margin-top: 3rem; font-size: 1.8rem; }
+h3 { margin-top: 2rem; }
+p, li { max-width: 78ch; }
+.hero { padding: 4rem 0 2rem; }
+.hero p { font-size: 1.25rem; max-width: 62ch; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(230px,1fr)); gap: 1rem; margin: 2rem 0; }
+.card { border: 1px solid color-mix(in srgb, currentColor 16%, transparent); border-radius: 14px; padding: 1.25rem; }
+.card h3 { margin-top: 0; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+pre { overflow-x: auto; padding: 1rem; border-radius: 10px; background: color-mix(in srgb, CanvasText 7%, Canvas); border: 1px solid color-mix(in srgb, currentColor 12%, transparent); }
+blockquote { margin-left: 0; padding-left: 1rem; border-left: 4px solid var(--accent); font-size: 1.08rem; }
+table { border-collapse: collapse; display: block; overflow-x: auto; }
+th, td { border: 1px solid color-mix(in srgb, currentColor 15%, transparent); padding: .5rem .75rem; text-align: left; }
+a { color: var(--accent); }
+.footer { border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent); padding: 2rem 0 4rem; opacity: .65; }

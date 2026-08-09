@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ page.title | default: site.title }} · {{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="{{ '/' | relative_url }}">opheap</a>
+      <nav>
+        <a href="{{ '/architecture.html' | relative_url }}">Architecture</a>
+        <a href="{{ '/programming-model.html' | relative_url }}">Model</a>
+        <a href="{{ '/durability.html' | relative_url }}">Durability</a>
+        <a href="{{ '/api.html' | relative_url }}">API</a>
+        <a href="{{ '/testing.html' | relative_url }}">Testing</a>
+        <a href="{{ '/SRS.html' | relative_url }}">SRS</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap content">
+    {{ content }}
+  </main>
+  <footer class="wrap footer">opheap · persistent state shaped like ordinary C++</footer>
+</body>
+</html>

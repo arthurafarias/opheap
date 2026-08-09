@@ -1,0 +1,7 @@
+/build*/
+/_site/
+/.cache/
+*.opheap
+*.wal
+*.snapshot
+.DS_Store

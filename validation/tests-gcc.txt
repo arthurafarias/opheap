@@ -1,0 +1,34 @@
+[PASS] codec::round trips universal tree
+[PASS] fault_injection::partial commit append is recovered as uncommitted tail
+[PASS] fault_injection::failed durability barrier poisons live heap
+[PASS] fault_injection::interrupted checkpoint leaves journal recovery path
+[PASS] heap::persistent object tree survives restart
+[PASS] heap::checkpoint bounds journal and recovery remains idempotent
+[PASS] heap::integrity detects checksum corruption
+[PASS] heap::multiple threads commit independent roots
+[PASS] heap::independent roots can commit from concurrent snapshots
+[PASS] journal::replays only committed root replacement
+[PASS] journal::torn commit does not publish transaction
+[PASS] journal::torn tail is discarded and truncated
+[PASS] map::insert erase and mapped mutation notify
+[PASS] map::existing operator index does not report structure
+[PASS] observing_resource::decorates pmr allocation
+[PASS] observer::binding routes change events
+[PASS] property::assignment and arithmetic are observable
+[PASS] property::equal assignment is coalesced
+[PASS] property::mutate closes the mutable escape hatch
+[PASS] snapshot::save and load image
+[PASS] storage::append read truncate and flush
+[PASS] storage::atomic replace
+[PASS] string::mutations notify
+[PASS] string::clear is idempotent
+[PASS] transaction::read your writes and dirty coalescing
+[PASS] transaction::abort publishes nothing
+[PASS] transaction::optimistic conflict is deterministic
+[PASS] value::javascript-like object tree
+[PASS] value::type mismatch throws
+[PASS] value::move assignment keeps destination observer
+[PASS] vector::structure and element changes notify
+[PASS] vector::reallocation keeps child bindings
+
+32 passed, 0 failed

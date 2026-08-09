@@ -1,0 +1,6 @@
+title: opheap
+description: Observable transactional persistence for STL-shaped C++ state.
+markdown: kramdown
+theme: null
+exclude:
+  - CMakeLists.txt

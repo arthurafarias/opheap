@@ -1,0 +1,3 @@
+add_executable(opheap_benchmark benchmark.cpp)
+target_link_libraries(opheap_benchmark PRIVATE opheap::opheap)
+target_compile_features(opheap_benchmark PRIVATE cxx_std_23)
