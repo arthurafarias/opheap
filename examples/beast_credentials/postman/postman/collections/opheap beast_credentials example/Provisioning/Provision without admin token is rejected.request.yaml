@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/v1/credentials"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: '{"principal":"{{primaryPrincipal}}","secret":"{{primarySecret}}"}'
+scripts:
+  - type: afterResponse
+    code: pm.test('status code is 401', function () { pm.response.to.have.status(401); });
+    language: text/javascript
+order: 1000

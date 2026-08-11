@@ -1,0 +1,23 @@
+$kind: collection
+name: opheap beast_credentials example
+description: Functional and security-behavior tests for the beast_credentials REST API (see examples/beast_credentials/README.md). Mirrors tests/api_test.sh; run either standalone (defaults baked into collection variables) or with the companion environment file.
+variables:
+  baseUrl: http://127.0.0.1:8080
+  adminToken: test-admin-token
+  runId: ""
+  primaryPrincipal: ""
+  primarySecret: ""
+  rateLimitPrincipal: ""
+  wrongSecretCode: ""
+  wrongSecretBody: ""
+scripts:
+  - type: http:beforeRequest
+    code: |-
+      if (!pm.collectionVariables.get('runId')) {
+          var runId = Date.now() + '-' + Math.floor(Math.random() * 100000);
+          pm.collectionVariables.set('runId', runId);
+          pm.collectionVariables.set('primaryPrincipal', 'test-user-' + runId);
+          pm.collectionVariables.set('primarySecret', 'correct horse battery staple');
+          pm.collectionVariables.set('rateLimitPrincipal', 'rate-user-' + runId);
+      }
+    language: text/javascript

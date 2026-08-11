@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/v1/credentials/verify"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: '{"principal":"no-such-user-{{runId}}","secret":"irrelevant"}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('status code is 401', function () { pm.response.to.have.status(401); });
+      pm.test('status code matches the wrong-secret case', function () {
+          pm.expect(pm.response.code).to.eql(parseInt(pm.collectionVariables.get('wrongSecretCode'), 10));
+      });
+      pm.test('response body matches the wrong-secret case byte for byte', function () {
+          pm.expect(pm.response.text()).to.eql(pm.collectionVariables.get('wrongSecretBody'));
+      });
+    language: text/javascript
+order: 3000

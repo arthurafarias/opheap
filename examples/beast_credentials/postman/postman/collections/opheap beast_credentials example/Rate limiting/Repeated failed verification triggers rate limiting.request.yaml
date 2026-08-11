@@ -1,0 +1,45 @@
+$kind: http-request
+description: Unused placeholder request; the real work happens in the Tests script via pm.sendRequest so it can loop until a 429 is observed.
+url: "{{baseUrl}}/healthz"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      // This item drives its own request loop via pm.sendRequest instead of
+      // relying on the configured GET below, because a single Postman item
+      // only fires one HTTP request -- see README.md for why.
+      const baseUrl = pm.variables.get('baseUrl');
+      const principal = pm.collectionVariables.get('rateLimitPrincipal');
+      const maxAttempts = 15;
+      let attempts = 0;
+
+      function attempt() {
+          attempts += 1;
+          pm.sendRequest({
+              url: baseUrl + '/v1/credentials/verify',
+              method: 'POST',
+              header: { 'Content-Type': 'application/json' },
+              body: {
+                  mode: 'raw',
+                  raw: JSON.stringify({ principal: principal, secret: 'wrong-' + attempts })
+              }
+          }, function (err, res) {
+              if (err) {
+                  pm.test('rate limit probe completed without a transport error', function () {
+                      throw new Error(String(err));
+                  });
+                  return;
+              }
+              if (res.code === 429 || attempts >= maxAttempts) {
+                  pm.test('repeated failed verifications trigger rate limiting (429) within ' + maxAttempts + ' attempts', function () {
+                      pm.expect(res.code).to.eql(429);
+                  });
+                  return;
+              }
+              attempt();
+          });
+      }
+
+      attempt();
+    language: text/javascript
+order: 2000

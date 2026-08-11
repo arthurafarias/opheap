@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/v1/credentials"
+method: POST
+headers:
+  Content-Type: application/json
+  X-Admin-Token: "{{adminToken}}"
+body:
+  type: text
+  content: '{"principal":"","secret":"{{primarySecret}}"}'
+scripts:
+  - type: afterResponse
+    code: pm.test('status code is 400', function () { pm.response.to.have.status(400); });
+    language: text/javascript
+order: 4000

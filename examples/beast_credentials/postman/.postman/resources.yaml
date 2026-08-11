@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: 0a2ed84c-0a75-426d-8532-0b7355725d83
+
+localResources:
+  collections:
+    - ../beast_credentials.postman_collection.json
+  environments:
+    - ../beast_credentials.postman_environment.json
+
+cloudResources:
+  collections:
+    ../postman/collections/opheap beast_credentials example: cabc81a4-47d2-4c0a-ad91-cfab52301b15
