@@ -16,7 +16,7 @@ ctest --test-dir build-asan --output-on-failure
 
 ## Test architecture
 
-Add or update a sibling `tests/opheap/testing/*_test.hpp` group for every class/subsystem changed. Tests self-register as `inline static test_group` objects and are compiled together in one generated translation unit.
+Add or update a sibling `include/.../testing/*_test.hpp` group, colocated with the class/subsystem changed, in its owning library (e.g. `libraries/libopheap-core/include/opheap/testing/heap_test.hpp`). Each group is a struct deriving from `test_group` that self-registers on construction, and all discovered test headers are compiled together in one generated translation unit.
 
 ## Durable format changes
 

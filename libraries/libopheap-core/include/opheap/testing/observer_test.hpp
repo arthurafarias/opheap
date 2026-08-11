@@ -5,7 +5,8 @@
 
 namespace opheap::testing {
 
-inline static test_group observer_test{"observer", {
+struct observer_test : public test_group {
+    observer_test() : test_group("observer", {
     {"binding routes change events", [](test_context& ctx) {
         recording_observer observer;
         test_observable item;
@@ -16,6 +17,9 @@ inline static test_group observer_test{"observer", {
         ctx.equal(observer.events[0].offset, std::size_t{4});
         ctx.equal(observer.events[0].size, std::size_t{8});
     }},
-}};
+    }) {}
+};
+
+inline static observer_test observer_test_instance;
 
 } // namespace opheap::testing

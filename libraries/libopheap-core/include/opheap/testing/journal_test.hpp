@@ -6,7 +6,8 @@
 
 namespace opheap::testing {
 
-inline static test_group journal_test{"journal", {
+struct journal_test : public test_group {
+    journal_test() : test_group("journal", {
     {"replays only committed root replacement", [](test_context& ctx) {
         auto directory = temporary_directory("journal");
         auto backend = make_default_storage_backend();
@@ -50,6 +51,9 @@ inline static test_group journal_test{"journal", {
         auto verify = backend->open_file(directory / "heap.wal", false);
         ctx.equal(verify->size(), intact);
     }},
-}};
+    }) {}
+};
+
+inline static journal_test journal_test_instance;
 
 } // namespace opheap::testing

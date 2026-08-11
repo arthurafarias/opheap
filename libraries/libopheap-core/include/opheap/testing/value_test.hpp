@@ -4,7 +4,8 @@
 
 namespace opheap::testing {
 
-inline static test_group value_test{"value", {
+struct value_test : public test_group {
+    value_test() : test_group("value", {
     {"javascript-like object tree", [](test_context& ctx) {
         recording_observer observer;
         value root;
@@ -29,6 +30,9 @@ inline static test_group value_test{"value", {
         item.as_string().append(" world");
         ctx.equal(observer.events.size(), before + 1);
     }},
-}};
+    }) {}
+};
+
+inline static value_test value_test_instance;
 
 } // namespace opheap::testing

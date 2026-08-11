@@ -1,6 +1,6 @@
 #pragma once
-#include "test_group.hpp"
-#include "test_support.hpp"
+#include <opheap/testing/test_group.hpp>
+#include <opheap/testing/test_support.hpp>
 
 #include <opheap/heap.hpp>
 #include <opheap/module/sql/interpreter.hpp>
@@ -8,7 +8,8 @@
 
 namespace opheap::testing {
 
-inline static test_group sql_interpreter_test{"sql_interpreter", {
+struct sql_interpreter_test : public test_group {
+    sql_interpreter_test() : test_group("sql_interpreter", {
     {"create/insert/select round trip", [](test_context& ctx) {
         auto directory = temporary_directory("sql-basic");
         auto heap = opheap::heap::open({.path = directory});
@@ -130,6 +131,9 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
         ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("CREATE TABLE t (a INTEGER)"); });
         ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("INSERT INTO t (a) VALUES ('not an int')"); });
     }},
-}};
+    }) {}
+};
+
+inline static sql_interpreter_test sql_interpreter_test_instance;
 
 } // namespace opheap::testing

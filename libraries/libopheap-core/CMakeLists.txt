@@ -20,7 +20,7 @@ endif()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 install(TARGETS opheap EXPORT opheapTargets)
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} PATTERN "testing" EXCLUDE)
 install(EXPORT opheapTargets NAMESPACE opheap:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/opheap)
 configure_package_config_file(
     cmake/opheapConfig.cmake.in

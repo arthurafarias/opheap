@@ -4,7 +4,8 @@
 
 namespace opheap::testing {
 
-inline static test_group map_test{"map", {
+struct map_test : public test_group {
+    map_test() : test_group("map", {
     {"insert erase and mapped mutation notify", [](test_context& ctx) {
         recording_observer observer;
         map<std::string, property<int>> values;
@@ -24,6 +25,9 @@ inline static test_group map_test{"map", {
         (void)values["a"];
         ctx.equal(observer.events.size(), count);
     }},
-}};
+    }) {}
+};
+
+inline static map_test map_test_instance;
 
 } // namespace opheap::testing

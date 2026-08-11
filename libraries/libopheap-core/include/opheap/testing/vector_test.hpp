@@ -4,7 +4,8 @@
 
 namespace opheap::testing {
 
-inline static test_group vector_test{"vector", {
+struct vector_test : public test_group {
+    vector_test() : test_group("vector", {
     {"structure and element changes notify", [](test_context& ctx) {
         recording_observer observer;
         vector<property<int>> values;
@@ -24,6 +25,9 @@ inline static test_group vector_test{"vector", {
         values[1] = 999;
         ctx.equal(observer.events.size(), before + 1);
     }},
-}};
+    }) {}
+};
+
+inline static vector_test vector_test_instance;
 
 } // namespace opheap::testing

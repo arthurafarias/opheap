@@ -1,13 +1,14 @@
 #pragma once
-#include "test_group.hpp"
-#include "test_support.hpp"
+#include <opheap/testing/test_group.hpp>
+#include <opheap/testing/test_support.hpp>
 
 #include <opheap/module/sql/parser.hpp>
 #include <opheap/module/sql/sql_error.hpp>
 
 namespace opheap::testing {
 
-inline static test_group sql_parser_test{"sql_parser", {
+struct sql_parser_test : public test_group {
+    sql_parser_test() : test_group("sql_parser", {
     {"parses CREATE TABLE column list", [](test_context& ctx) {
         auto stmt = std::get<opheap::module::sql::create_table_statement>(
             opheap::module::sql::parse_statement("CREATE TABLE t (a INTEGER, b TEXT, c BOOL);"));
@@ -71,6 +72,9 @@ inline static test_group sql_parser_test{"sql_parser", {
         ctx.throws<opheap::module::sql::sql_error>([] { (void)opheap::module::sql::parse_statement("SELECT * FROM t garbage"); });
         ctx.throws<opheap::module::sql::sql_error>([] { (void)opheap::module::sql::parse_statement("CREATE TABLE t ()"); });
     }},
-}};
+    }) {}
+};
+
+inline static sql_parser_test sql_parser_test_instance;
 
 } // namespace opheap::testing

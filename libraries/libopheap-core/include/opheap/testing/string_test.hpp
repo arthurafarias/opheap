@@ -4,7 +4,8 @@
 
 namespace opheap::testing {
 
-inline static test_group string_test{"string", {
+struct string_test : public test_group {
+    string_test() : test_group("string", {
     {"mutations notify", [](test_context& ctx) {
         recording_observer observer;
         string text{"ab"};
@@ -22,6 +23,9 @@ inline static test_group string_test{"string", {
         text.clear();
         ctx.check(observer.events.empty());
     }},
-}};
+    }) {}
+};
+
+inline static string_test string_test_instance;
 
 } // namespace opheap::testing

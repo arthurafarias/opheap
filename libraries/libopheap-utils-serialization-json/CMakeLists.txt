@@ -18,7 +18,7 @@ target_link_libraries(opheap-utils-serialization-json INTERFACE opheap::opheap)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 install(TARGETS opheap-utils-serialization-json EXPORT opheapUtilsSerializationJsonTargets)
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} PATTERN "testing" EXCLUDE)
 install(EXPORT opheapUtilsSerializationJsonTargets NAMESPACE opheap::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/opheap-utils-serialization-json)
 configure_package_config_file(

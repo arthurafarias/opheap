@@ -18,7 +18,7 @@ target_link_libraries(opheap-module-sql-interpreter INTERFACE opheap::opheap)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 install(TARGETS opheap-module-sql-interpreter EXPORT opheapModuleSqlTargets)
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} PATTERN "testing" EXCLUDE)
 install(EXPORT opheapModuleSqlTargets NAMESPACE opheap:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/opheap-module-sql)
 configure_package_config_file(
     cmake/opheap-module-sqlConfig.cmake.in

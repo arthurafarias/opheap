@@ -1,6 +1,6 @@
 #pragma once
-#include "test_group.hpp"
-#include "test_support.hpp"
+#include <opheap/testing/test_group.hpp>
+#include <opheap/testing/test_support.hpp>
 
 #include <opheap/module/sql/opheap_sql.hpp>
 
@@ -24,7 +24,8 @@ int run_repl(std::vector<std::string_view> arguments, std::string input, std::st
 
 } // namespace
 
-inline static test_group sql_repl_test{"sql_repl", {
+struct sql_repl_test : public test_group {
+    sql_repl_test() : test_group("sql_repl", {
     {"create, insert, and select round trip through the REPL", [](test_context& ctx) {
         auto directory = temporary_directory("sql-repl-basic");
         std::string output;
@@ -93,6 +94,9 @@ inline static test_group sql_repl_test{"sql_repl", {
         ctx.check(code == 2);
         ctx.check(err.str().find("usage:") != std::string::npos);
     }},
-}};
+    }) {}
+};
+
+inline static sql_repl_test sql_repl_test_instance;
 
 } // namespace opheap::testing

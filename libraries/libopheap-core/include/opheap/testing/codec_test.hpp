@@ -6,7 +6,8 @@
 
 namespace opheap::testing {
 
-inline static test_group codec_test{"codec", {
+struct codec_test : public test_group {
+    codec_test() : test_group("codec", {
     {"round trips universal tree", [](test_context& ctx) {
         value source;
         source["n"] = 42;
@@ -21,6 +22,9 @@ inline static test_group codec_test{"codec", {
         ctx.equal(decoded.at("s").as_string().view(), std::string_view{"hello"});
         ctx.check(decoded.at("a").as_array()[0].as_bool());
     }},
-}};
+    }) {}
+};
+
+inline static codec_test codec_test_instance;
 
 } // namespace opheap::testing

@@ -1,6 +1,6 @@
 #pragma once
-#include "test_group.hpp"
-#include "test_support.hpp"
+#include <opheap/testing/test_group.hpp>
+#include <opheap/testing/test_support.hpp>
 
 #include <opheap/module/cli/opheap_cli.hpp>
 
@@ -24,7 +24,8 @@ int run_cli(std::vector<std::string_view> arguments, std::string input, std::str
 
 } // namespace
 
-inline static test_group cli_test{"cli", {
+struct cli_test : public test_group {
+    cli_test() : test_group("cli", {
     {"round-trips JSON scalars, strings, and nesting", [](test_context& ctx) {
         opheap::value scratch;
         auto parse = [&](std::string_view text) {
@@ -116,6 +117,9 @@ inline static test_group cli_test{"cli", {
         ctx.check(code == 2);
         ctx.check(out.str().find("usage:") != std::string::npos);
     }},
-}};
+    }) {}
+};
+
+inline static cli_test cli_test_instance;
 
 } // namespace opheap::testing

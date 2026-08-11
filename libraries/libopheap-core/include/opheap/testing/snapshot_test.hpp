@@ -8,7 +8,8 @@
 
 namespace opheap::testing {
 
-inline static test_group snapshot_test{"snapshot", {
+struct snapshot_test : public test_group {
+    snapshot_test() : test_group("snapshot", {
     {"save and load locator index without materializing payload", [](test_context& ctx) {
         auto directory = temporary_directory("snapshot");
         auto backend = make_default_storage_backend();
@@ -33,6 +34,9 @@ inline static test_group snapshot_test{"snapshot", {
         ctx.equal(bytes.size(), std::size_t{1});
         ctx.check(bytes.front() == std::byte{9});
     }},
-}};
+    }) {}
+};
+
+inline static snapshot_test snapshot_test_instance;
 
 } // namespace opheap::testing

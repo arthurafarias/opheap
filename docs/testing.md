@@ -7,31 +7,66 @@ title: Testing
 
 ## Per-class self-registering groups
 
-Tests follow a deliberate one-component/one-header pattern:
+Each header-only library carries its own tests, colocated with the classes they cover, under
+that library's `include/.../testing/` tree — the testing facility ships in the source code of
+the library itself rather than living in a separate top-level tree:
 
 ```text
-tests/opheap/testing/observer_test.hpp
-tests/opheap/testing/property_test.hpp
-tests/opheap/testing/string_test.hpp
-tests/opheap/testing/vector_test.hpp
-tests/opheap/testing/map_test.hpp
-tests/opheap/testing/value_test.hpp
-tests/opheap/testing/memory_resource_test.hpp
-tests/opheap/testing/codec_test.hpp
-tests/opheap/testing/storage_test.hpp
-tests/opheap/testing/journal_test.hpp
-tests/opheap/testing/snapshot_test.hpp
-tests/opheap/testing/transaction_test.hpp
-tests/opheap/testing/heap_test.hpp
-tests/opheap/testing/cli_test.hpp
-tests/opheap/testing/sql_lexer_test.hpp
-tests/opheap/testing/sql_parser_test.hpp
-tests/opheap/testing/sql_interpreter_test.hpp
-tests/opheap/testing/sql_repl_test.hpp
-tests/opheap/testing/fault_injection_test.hpp
+libraries/libopheap-core/include/opheap/testing/observer_test.hpp
+libraries/libopheap-core/include/opheap/testing/property_test.hpp
+libraries/libopheap-core/include/opheap/testing/string_test.hpp
+libraries/libopheap-core/include/opheap/testing/vector_test.hpp
+libraries/libopheap-core/include/opheap/testing/map_test.hpp
+libraries/libopheap-core/include/opheap/testing/value_test.hpp
+libraries/libopheap-core/include/opheap/testing/memory_resource_test.hpp
+libraries/libopheap-core/include/opheap/testing/codec_test.hpp
+libraries/libopheap-core/include/opheap/testing/storage_test.hpp
+libraries/libopheap-core/include/opheap/testing/journal_test.hpp
+libraries/libopheap-core/include/opheap/testing/snapshot_test.hpp
+libraries/libopheap-core/include/opheap/testing/transaction_test.hpp
+libraries/libopheap-core/include/opheap/testing/heap_test.hpp
+libraries/libopheap-core/include/opheap/testing/fault_injection_test.hpp
+libraries/libopheap-module-cli/include/opheap/module/cli/testing/cli_test.hpp
+libraries/libopheap-module-sql/include/opheap/module/sql/testing/sql_lexer_test.hpp
+libraries/libopheap-module-sql/include/opheap/module/sql/testing/sql_parser_test.hpp
+libraries/libopheap-module-sql/include/opheap/module/sql/testing/sql_interpreter_test.hpp
+libraries/libopheap-module-sql/include/opheap/module/sql/testing/sql_repl_test.hpp
 ```
 
-Each header declares an `inline static test_group`. CMake discovers the headers and generates one source file containing all includes. This mirrors the useful property of CXORM's newer test architecture: every test suite coexists in one translation unit, exposing accidental helper/name collisions and ODR problems.
+The shared harness (`test_group`, `test_case`, `test_context`, `test_failure`, `registry`,
+`run_all`, plus fixtures like `temporary_directory`/`recording_observer`) lives alongside them
+at `libraries/libopheap-core/include/opheap/testing/`, since `libopheap-core` is already a
+transitive dependency of every other library.
+
+Each test header declares a dedicated `opheap::testing` struct named after the class it covers,
+deriving from `test_group`:
+
+```cpp
+// libraries/libopheap-core/include/opheap/testing/heap_test.hpp
+namespace opheap::testing {
+
+struct heap_test : public test_group {
+    heap_test() : test_group("heap", {
+        {"persistent object tree survives restart", [](test_context& ctx) {
+            // ...
+        }},
+    }) {}
+};
+
+inline static heap_test heap_test_instance;
+
+} // namespace opheap::testing
+```
+
+Materialization is automatic, exactly as before: constructing `heap_test_instance` at static-init
+time runs `test_group`'s constructor, which self-registers the group into `registry()`. CMake
+globs every library's `include/.../testing/*_test.hpp` and generates one source file containing
+all the includes. This mirrors the useful property of CXORM's newer test architecture: every test
+suite coexists in one translation unit, exposing accidental helper/name collisions and ODR
+problems.
+
+Because tests live under `include/`, each library's `install(DIRECTORY include/ ...)` excludes the
+`testing/` subdirectory, so installed packages ship production headers only.
 
 The naming convention itself is STL-style lowercase/snake_case.
 

@@ -17,6 +17,7 @@ public:
         : name_(std::move(name)), tests_(tests) {
         registry().push_back(this);
     }
+    virtual ~test_group() = default;
 
     [[nodiscard]] std::string_view name() const noexcept { return name_; }
     [[nodiscard]] const std::vector<test_case>& tests() const noexcept { return tests_; }

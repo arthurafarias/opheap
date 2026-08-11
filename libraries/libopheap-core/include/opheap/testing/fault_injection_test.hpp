@@ -7,7 +7,8 @@
 
 namespace opheap::testing {
 
-inline static test_group fault_injection_test{"fault_injection", {
+struct fault_injection_test : public test_group {
+    fault_injection_test() : test_group("fault_injection", {
     {"partial commit append is recovered as uncommitted tail", [](test_context& ctx) {
         auto directory = temporary_directory("fault-append");
         auto plan = std::make_shared<fault_plan>();
@@ -50,6 +51,9 @@ inline static test_group fault_injection_test{"fault_injection", {
         auto read = recovered.begin();
         ctx.equal(read.object_root().at("n").as_integer(), std::int64_t{77});
     }},
-}};
+    }) {}
+};
+
+inline static fault_injection_test fault_injection_test_instance;
 
 } // namespace opheap::testing

@@ -7,7 +7,8 @@
 
 namespace opheap::testing {
 
-inline static test_group storage_test{"storage", {
+struct storage_test : public test_group {
+    storage_test() : test_group("storage", {
     {"append read truncate and flush", [](test_context& ctx) {
         auto directory = temporary_directory("storage");
         auto backend = make_default_storage_backend();
@@ -32,6 +33,9 @@ inline static test_group storage_test{"storage", {
         backend->atomic_replace(directory / "tmp", directory / "dst");
         ctx.check(backend->exists(directory / "dst"));
     }},
-}};
+    }) {}
+};
+
+inline static storage_test storage_test_instance;
 
 } // namespace opheap::testing

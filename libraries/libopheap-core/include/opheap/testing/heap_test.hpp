@@ -8,7 +8,8 @@
 
 namespace opheap::testing {
 
-inline static test_group heap_test{"heap", {
+struct heap_test : public test_group {
+    heap_test() : test_group("heap", {
     {"persistent object tree survives restart", [](test_context& ctx) {
         auto directory = temporary_directory("restart");
         {
@@ -154,6 +155,9 @@ inline static test_group heap_test{"heap", {
         ctx.equal(read.object_root("a").at("v").as_integer(), std::int64_t{1});
         ctx.equal(read.object_root("b").at("v").as_integer(), std::int64_t{2});
     }},
-}};
+    }) {}
+};
+
+inline static heap_test heap_test_instance;
 
 } // namespace opheap::testing

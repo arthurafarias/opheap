@@ -19,7 +19,7 @@ target_link_libraries(opheap-module-cli-tool INTERFACE opheap::opheap opheap::js
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 install(TARGETS opheap-module-cli-tool EXPORT opheapModuleCliTargets)
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} PATTERN "testing" EXCLUDE)
 install(EXPORT opheapModuleCliTargets NAMESPACE opheap:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/opheap-module-cli)
 configure_package_config_file(
     cmake/opheap-module-cliConfig.cmake.in

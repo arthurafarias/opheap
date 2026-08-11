@@ -243,16 +243,22 @@ command references.
 
 ## Testing architecture
 
-Every class or durable subsystem has a sibling self-registering test header such as:
+Every class or durable subsystem has a self-registering test header colocated with it inside its
+owning header-only library's own `include/.../testing/` tree, such as:
 
 ```text
-tests/opheap/testing/property_test.hpp
-tests/opheap/testing/vector_test.hpp
-tests/opheap/testing/journal_test.hpp
-tests/opheap/testing/heap_test.hpp
+libraries/libopheap-core/include/opheap/testing/property_test.hpp
+libraries/libopheap-core/include/opheap/testing/vector_test.hpp
+libraries/libopheap-core/include/opheap/testing/journal_test.hpp
+libraries/libopheap-core/include/opheap/testing/heap_test.hpp
 ```
 
-Each file defines an `inline static test_group`. CMake discovers all `*_test.hpp` files and generates one aggregate translation unit. This deliberately catches header-level namespace collisions and ODR mistakes that independent test executables can hide.
+Each file defines a struct named after the class it covers, deriving from `test_group`, e.g.
+`struct heap_test : public test_group { heap_test() : test_group("heap", { /* cases */ }) {} };`.
+Constructing its `inline static` instance self-registers the group automatically. CMake discovers
+all `include/.../testing/*_test.hpp` files across every library and generates one aggregate
+translation unit. This deliberately catches header-level namespace collisions and ODR mistakes
+that independent test executables can hide.
 
 Current coverage includes:
 

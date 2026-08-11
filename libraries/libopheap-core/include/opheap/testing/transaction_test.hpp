@@ -4,7 +4,8 @@
 
 namespace opheap::testing {
 
-inline static test_group transaction_test{"transaction", {
+struct transaction_test : public test_group {
+    transaction_test() : test_group("transaction", {
     {"read your writes and dirty coalescing", [](test_context& ctx) {
         auto directory = temporary_directory("tx");
         auto heap = opheap::heap::open({.path = directory});
@@ -43,6 +44,9 @@ inline static test_group transaction_test{"transaction", {
         a.commit();
         ctx.throws<conflict_error>([&] { b.commit(); });
     }},
-}};
+    }) {}
+};
+
+inline static transaction_test transaction_test_instance;
 
 } // namespace opheap::testing

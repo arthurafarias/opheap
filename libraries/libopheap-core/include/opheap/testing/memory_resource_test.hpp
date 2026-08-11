@@ -7,7 +7,8 @@
 
 namespace opheap::testing {
 
-inline static test_group memory_resource_test{"observing_resource", {
+struct memory_resource_test : public test_group {
+    memory_resource_test() : test_group("observing_resource", {
     {"decorates pmr allocation", [](test_context& ctx) {
         recording_observer observer;
         observing_resource resource{std::pmr::get_default_resource(), {&observer, 10}};
@@ -20,6 +21,9 @@ inline static test_group memory_resource_test{"observing_resource", {
         ctx.equal(observer.events.front().kind, change_kind::allocation);
         ctx.equal(observer.events.back().kind, change_kind::deallocation);
     }},
-}};
+    }) {}
+};
+
+inline static memory_resource_test memory_resource_test_instance;
 
 } // namespace opheap::testing

@@ -1,13 +1,14 @@
 #pragma once
-#include "test_group.hpp"
-#include "test_support.hpp"
+#include <opheap/testing/test_group.hpp>
+#include <opheap/testing/test_support.hpp>
 
 #include <opheap/module/sql/lexer.hpp>
 #include <opheap/module/sql/sql_error.hpp>
 
 namespace opheap::testing {
 
-inline static test_group sql_lexer_test{"sql_lexer", {
+struct sql_lexer_test : public test_group {
+    sql_lexer_test() : test_group("sql_lexer", {
     {"tokenizes keywords case-insensitively", [](test_context& ctx) {
         auto tokens = opheap::module::sql::tokenize("select * From t");
         ctx.equal(tokens.size(), std::size_t{5});
@@ -54,6 +55,9 @@ inline static test_group sql_lexer_test{"sql_lexer", {
     {"rejects unexpected characters", [](test_context& ctx) {
         ctx.throws<opheap::module::sql::sql_error>([&] { (void)opheap::module::sql::tokenize("SELECT # FROM t"); });
     }},
-}};
+    }) {}
+};
+
+inline static sql_lexer_test sql_lexer_test_instance;
 
 } // namespace opheap::testing

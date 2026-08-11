@@ -4,7 +4,8 @@
 
 namespace opheap::testing {
 
-inline static test_group property_test{"property", {
+struct property_test : public test_group {
+    property_test() : test_group("property", {
     {"assignment and arithmetic are observable", [](test_context& ctx) {
         recording_observer observer;
         property<int> value{10};
@@ -30,6 +31,9 @@ inline static test_group property_test{"property", {
         ctx.equal(value.get(), std::string{"abcdef"});
         ctx.equal(observer.events.size(), std::size_t{1});
     }},
-}};
+    }) {}
+};
+
+inline static property_test property_test_instance;
 
 } // namespace opheap::testing
