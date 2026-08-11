@@ -28,11 +28,11 @@ inline static test_group cli_test{"cli", {
     {"round-trips JSON scalars, strings, and nesting", [](test_context& ctx) {
         opheap::value scratch;
         auto parse = [&](std::string_view text) {
-            return opheap::cli::json_parser{text, scratch.resource()}.parse();
+            return opheap::utils::serialization::json::json_parser{text, scratch.resource()}.parse();
         };
         auto printed = [&](const opheap::value& value) {
             std::ostringstream out;
-            opheap::cli::write_json(out, value);
+            opheap::utils::serialization::json::write_json(out, value);
             return out.str();
         };
         ctx.equal(printed(parse("null")), std::string{"null"});
@@ -44,11 +44,11 @@ inline static test_group cli_test{"cli", {
     }},
     {"rejects malformed JSON", [](test_context& ctx) {
         opheap::value scratch;
-        ctx.throws<opheap::cli::json_error>([&] {
-            (void)opheap::cli::json_parser{"{\"a\":}", scratch.resource()}.parse();
+        ctx.throws<opheap::utils::serialization::json::json_error>([&] {
+            (void)opheap::utils::serialization::json::json_parser{"{\"a\":}", scratch.resource()}.parse();
         });
-        ctx.throws<opheap::cli::json_error>([&] {
-            (void)opheap::cli::json_parser{"[1,]", scratch.resource()}.parse();
+        ctx.throws<opheap::utils::serialization::json::json_error>([&] {
+            (void)opheap::utils::serialization::json::json_parser{"[1,]", scratch.resource()}.parse();
         });
     }},
     {"create, get, update, and delete a root end to end", [](test_context& ctx) {

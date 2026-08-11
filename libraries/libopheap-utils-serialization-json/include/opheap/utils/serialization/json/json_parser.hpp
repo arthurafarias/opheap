@@ -1,6 +1,6 @@
 #pragma once
 
-#include "opheap/cli/json_error.hpp"
+#include "opheap/utils/serialization/json/json_error.hpp"
 
 #include <opheap/value.hpp>
 
@@ -11,7 +11,7 @@
 #include <string>
 #include <string_view>
 
-namespace opheap::cli {
+namespace opheap::utils::serialization::json {
 
 class json_parser final {
 public:
@@ -231,4 +231,4 @@ private:
     std::size_t position_{};
 };
 
-} // namespace opheap::cli
+} // namespace opheap::utils::serialization::json

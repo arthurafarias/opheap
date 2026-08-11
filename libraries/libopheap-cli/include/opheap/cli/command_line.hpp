@@ -1,12 +1,11 @@
 #pragma once
 
-#include "opheap/cli/json_error.hpp"
-#include "opheap/cli/json_parser.hpp"
-#include "opheap/cli/json_writer.hpp"
 #include "opheap/cli/root_path.hpp"
+#include "opheap/cli/usage_error.hpp"
 
 #include <opheap/heap.hpp>
 #include <opheap/heap_config.hpp>
+#include <opheap/utils/serialization/json/opheap_utils_serialization_json.hpp>
 #include <opheap/value.hpp>
 
 #include <filesystem>
@@ -20,6 +19,8 @@
 #include <utility>
 
 namespace opheap::cli {
+
+namespace json = opheap::utils::serialization::json;
 
 inline void print_usage(std::ostream& output) {
     output <<
@@ -41,7 +42,7 @@ inline std::string read_json_argument(std::string_view argument, std::istream& i
 }
 
 // Parses arguments and runs a single opheap-cli command against a heap opened for the
-// call, writing results to `output`. Throws json_error for usage mistakes and
+// call, writing results to `output`. Throws usage_error for usage mistakes and
 // std::runtime_error for domain errors (missing roots, etc.); callers that want
 // process-style error formatting and exit codes should use execute() instead.
 inline int run(std::span<const std::string_view> arguments, std::istream& input, std::ostream& output) {
@@ -50,7 +51,7 @@ inline int run(std::span<const std::string_view> arguments, std::istream& input,
     while (argument < arguments.size()) {
         const std::string_view option = arguments[argument];
         if (option != "-C" && option != "--path") break;
-        if (++argument == arguments.size()) throw json_error(std::string{option} + " requires a directory");
+        if (++argument == arguments.size()) throw usage_error(std::string{option} + " requires a directory");
         heap_path = arguments[argument++];
     }
     if (argument == arguments.size() || arguments[argument] == "help" ||
@@ -63,12 +64,12 @@ inline int run(std::span<const std::string_view> arguments, std::istream& input,
     auto heap = opheap::heap::open(opheap::heap_config{.path = std::move(heap_path)});
 
     if (command == "checkpoint") {
-        if (argument != arguments.size()) throw json_error("checkpoint takes no arguments");
+        if (argument != arguments.size()) throw usage_error("checkpoint takes no arguments");
         heap.checkpoint();
         return 0;
     }
     if (command == "verify") {
-        if (argument != arguments.size()) throw json_error("verify takes no arguments");
+        if (argument != arguments.size()) throw usage_error("verify takes no arguments");
         const auto report = heap.check_integrity();
         output << "{\"ok\":" << (report.ok ? "true" : "false")
                << ",\"roots\":" << report.roots
@@ -76,58 +77,62 @@ inline int run(std::span<const std::string_view> arguments, std::istream& input,
                << ",\"journal_bytes\":" << report.journal_bytes
                << ",\"last_sequence\":" << report.last_sequence
                << ",\"message\":";
-        write_string(output, report.message);
+        json::write_string(output, report.message);
         output << "}\n";
         return report.ok ? 0 : 1;
     }
     if (command == "inspect") {
-        if (argument != arguments.size()) throw json_error("inspect takes no arguments");
+        if (argument != arguments.size()) throw usage_error("inspect takes no arguments");
         auto transaction = heap.begin();
         output.put('{');
         bool first = true;
         for (const auto& name : heap.root_names()) {
             if (!first) output.put(',');
             first = false;
-            write_string(output, name);
+            json::write_string(output, name);
             output.put(':');
-            write_json(output, transaction.root(name));
+            json::write_json(output, transaction.root(name));
         }
         output << "}\n";
         return 0;
     }
 
-    if (argument == arguments.size()) throw json_error(std::string{command} + " requires a root name");
+    if (argument == arguments.size()) throw usage_error(std::string{command} + " requires a root name");
     const std::string_view name = arguments[argument++];
     if (command == "get") {
-        if (argument != arguments.size()) throw json_error("get takes one root name");
+        if (argument != arguments.size()) throw usage_error("get takes one root name");
         auto transaction = heap.begin();
-        write_json(output, get_path(transaction, name));
+        json::write_json(output, get_path(transaction, name));
         output.put('\n');
         return 0;
     }
-    if (name.empty()) throw json_error("root name must not be empty");
+    if (name.empty()) throw usage_error("root name must not be empty");
     auto transaction = heap.begin();
     auto& root = transaction.root(name);
     if (command == "delete") {
-        if (argument != arguments.size()) throw json_error("delete takes one root name");
+        if (argument != arguments.size()) throw usage_error("delete takes one root name");
         if (root.is_null()) throw std::runtime_error("root not found: " + std::string{name});
         root = opheap::null;
         transaction.commit();
         return 0;
     }
     if (command != "create" && command != "update")
-        throw json_error("unknown command: " + std::string{command});
+        throw usage_error("unknown command: " + std::string{command});
     if (argument == arguments.size() || argument + 1 != arguments.size())
-        throw json_error(std::string{command} + " requires a root name and one JSON value");
+        throw usage_error(std::string{command} + " requires a root name and one JSON value");
     if (command == "create" && !root.is_null())
         throw std::runtime_error("root already exists: " + std::string{name});
     if (command == "update" && root.is_null())
         throw std::runtime_error("root not found: " + std::string{name});
 
-    const auto json = read_json_argument(arguments[argument], input);
-    root = json_parser{json, root.resource()}.parse();
+    const auto payload = read_json_argument(arguments[argument], input);
+    try {
+        root = json::json_parser{payload, root.resource()}.parse();
+    } catch (const json::json_error& failure) {
+        throw usage_error(failure.what());
+    }
     transaction.commit();
-    write_json(output, root);
+    json::write_json(output, root);
     output.put('\n');
     return 0;
 }
@@ -139,7 +144,7 @@ inline int execute(std::span<const std::string_view> arguments, std::istream& in
     std::ostream& error) {
     try {
         return run(arguments, input, output);
-    } catch (const json_error& failure) {
+    } catch (const usage_error& failure) {
         error << "opheap-cli: " << failure.what() << '\n';
         print_usage(error);
         return 2;

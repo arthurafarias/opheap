@@ -3,6 +3,7 @@ project(opheap-cli-tool VERSION 0.1.0 LANGUAGES CXX)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/OpheapDependency.cmake)
 opheap_require_core()
+opheap_require_json()
 
 add_library(opheap-cli-tool INTERFACE)
 add_library(opheap::cli ALIAS opheap-cli-tool)
@@ -13,7 +14,7 @@ target_include_directories(opheap-cli-tool
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(opheap-cli-tool INTERFACE opheap::opheap)
+target_link_libraries(opheap-cli-tool INTERFACE opheap::opheap opheap::json)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

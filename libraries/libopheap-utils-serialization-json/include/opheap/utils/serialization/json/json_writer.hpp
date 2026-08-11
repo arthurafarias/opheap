@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <string_view>
 
-namespace opheap::cli {
+namespace opheap::utils::serialization::json {
 
 inline void write_string(std::ostream& output, std::string_view value) {
     static constexpr char hex[] = "0123456789abcdef";
@@ -69,4 +69,4 @@ inline void write_json(std::ostream& output, const opheap::value& value) {
     }
 }
 
-} // namespace opheap::cli
+} // namespace opheap::utils::serialization::json

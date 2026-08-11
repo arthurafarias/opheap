@@ -42,6 +42,26 @@ function(opheap_require_sql)
     )
 endfunction()
 
+# Resolves the opheap::json target for a utility application under applications/.
+# Mirrors opheap_require_core(): reuse an existing target, else find_package(),
+# else fall back to the in-tree libopheap-utils-serialization-json so the
+# application still builds standalone on a machine with nothing installed.
+function(opheap_require_json)
+    if(TARGET opheap::json)
+        return()
+    endif()
+
+    find_package(opheap-utils-serialization-json CONFIG QUIET)
+    if(TARGET opheap::json)
+        return()
+    endif()
+
+    add_subdirectory(
+        ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries/libopheap-utils-serialization-json
+        ${CMAKE_BINARY_DIR}/libopheap-utils-serialization-json
+    )
+endfunction()
+
 # Resolves the opheap::cli target for a utility application under applications/.
 # Mirrors opheap_require_core(): reuse an existing target, else find_package(),
 # else fall back to the in-tree libopheap-cli so the application still builds
