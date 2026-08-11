@@ -3,28 +3,18 @@ project(opheap VERSION 0.2.0 LANGUAGES CXX)
 
 option(OPHEAP_ENABLE_SANITIZERS "Enable ASan and UBSan" OFF)
 
-add_library(opheap
-    src/heap.cpp
-    src/journal.cpp
-    src/snapshot.cpp
-    src/storage.cpp
-)
+add_library(opheap INTERFACE)
 add_library(opheap::opheap ALIAS opheap)
 
-target_compile_features(opheap PUBLIC cxx_std_23)
+target_compile_features(opheap INTERFACE cxx_std_23)
 target_include_directories(opheap
-    PUBLIC
+    INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
-if(MSVC)
-    target_compile_options(opheap PRIVATE /W4 /permissive-)
-else()
-    target_compile_options(opheap PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 if(OPHEAP_ENABLE_SANITIZERS AND NOT MSVC)
-    target_compile_options(opheap PUBLIC -fsanitize=address,undefined -fno-omit-frame-pointer)
-    target_link_options(opheap PUBLIC -fsanitize=address,undefined)
+    target_compile_options(opheap INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
+    target_link_options(opheap INTERFACE -fsanitize=address,undefined)
 endif()
 
 include(GNUInstallDirs)

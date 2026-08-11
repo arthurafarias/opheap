@@ -1,11 +1,15 @@
-#include "opheap/storage.hpp"
-#include "opheap/types.hpp"
+#pragma once
+
+#include "opheap/corruption_error.hpp"
+#include "opheap/detail/io_error.hpp"
+#include "opheap/storage_error.hpp"
+#include "opheap/storage_file.hpp"
 
 #include <algorithm>
-#include <cerrno>
-#include <cstring>
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
-#include <system_error>
+#include <span>
 
 #if defined(_WIN32)
 #define NOMINMAX
@@ -17,18 +21,7 @@
 #include <unistd.h>
 #endif
 
-namespace opheap {
-namespace {
-
-[[noreturn]] void io_error(const char* operation, const std::filesystem::path& path) {
-#if defined(_WIN32)
-  throw storage_error(std::string(operation) + " failed for " + path.string() +
-                         " (win32=" + std::to_string(GetLastError()) + ")");
-#else
-  throw storage_error(std::string(operation) + " failed for " + path.string() +
-                         ": " + std::strerror(errno));
-#endif
-}
+namespace opheap::detail {
 
 #if defined(_WIN32)
 struct native_file final : public storage_file {
@@ -173,67 +166,4 @@ private:
 };
 #endif
 
-struct native_storage_backend final : public storage_backend {
-public:
-  std::unique_ptr<storage_file> open_file(const std::filesystem::path& path,
-                                         bool create_if_missing) override {
-    return std::make_unique<native_file>(path, create_if_missing);
-  }
-
-  void create_directories(const std::filesystem::path& path) override {
-    std::error_code ec;
-    std::filesystem::create_directories(path, ec);
-    if (ec) throw storage_error("create_directories failed: " + ec.message());
-  }
-
-  bool exists(const std::filesystem::path& path) const override {
-    std::error_code ec;
-    const bool value = std::filesystem::exists(path, ec);
-    if (ec) throw storage_error("exists failed: " + ec.message());
-    return value;
-  }
-
-  void atomic_replace(const std::filesystem::path& from,
-                      const std::filesystem::path& to) override {
-#if defined(_WIN32)
-    if (!MoveFileExW(from.wstring().c_str(), to.wstring().c_str(),
-                     MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
-      io_error("MoveFileEx", to);
-    }
-#else
-    if (::rename(from.c_str(), to.c_str()) != 0) io_error("rename", to);
-#endif
-  }
-
-  void remove_file(const std::filesystem::path& path) override {
-    std::error_code ec;
-    std::filesystem::remove(path, ec);
-    if (ec) throw storage_error("remove failed: " + ec.message());
-  }
-
-  void sync_directory(const std::filesystem::path& directory) override {
-#if defined(_WIN32)
-    // MoveFileEx(..., MOVEFILE_WRITE_THROUGH) is the strongest generally
-    // available directory-entry persistence primitive used by this backend.
-    (void)directory;
-#else
-    const int fd = ::open(directory.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-    if (fd < 0) io_error("open directory", directory);
-    const int rc = ::fsync(fd);
-    const int saved = errno;
-    ::close(fd);
-    if (rc != 0) {
-      errno = saved;
-      io_error("fsync directory", directory);
-    }
-#endif
-  }
-};
-
-} // namespace
-
-std::shared_ptr<storage_backend> make_default_storage_backend() {
-  return std::make_shared<native_storage_backend>();
-}
-
-} // namespace opheap
+} // namespace opheap::detail
