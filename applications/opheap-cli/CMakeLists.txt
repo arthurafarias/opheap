@@ -3,9 +3,10 @@ project(opheap-cli VERSION 0.2.0 LANGUAGES CXX)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/OpheapDependency.cmake)
 opheap_require_core()
+opheap_require_cli()
 
 add_executable(opheap-cli src/main.cpp)
-target_link_libraries(opheap-cli PRIVATE opheap::opheap)
+target_link_libraries(opheap-cli PRIVATE opheap::opheap opheap::cli)
 target_compile_features(opheap-cli PRIVATE cxx_std_23)
 if(MSVC)
     target_compile_options(opheap-cli PRIVATE /W4 /permissive-)
