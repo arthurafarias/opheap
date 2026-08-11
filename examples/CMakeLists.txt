@@ -3,3 +3,5 @@ target_link_libraries(opheap_basic PRIVATE opheap::opheap)
 
 add_executable(opheap_monitor monitor.cpp)
 target_link_libraries(opheap_monitor PRIVATE opheap::opheap)
+
+add_subdirectory(beast_credentials)
