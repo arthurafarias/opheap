@@ -1,9 +1,24 @@
 #pragma once
 
-#include "opheap/module/sql/ast.hpp"
-#include "opheap/module/sql/lexer.hpp"
+#include "opheap/module/sql/column_definition.hpp"
+#include "opheap/module/sql/column_type.hpp"
+#include "opheap/module/sql/comparison_operator.hpp"
+#include "opheap/module/sql/create_table_statement.hpp"
+#include "opheap/module/sql/delete_statement.hpp"
+#include "opheap/module/sql/expression.hpp"
+#include "opheap/module/sql/insert_statement.hpp"
+#include "opheap/module/sql/literal.hpp"
+#include "opheap/module/sql/logical_operator.hpp"
+#include "opheap/module/sql/make_comparison.hpp"
+#include "opheap/module/sql/make_logical.hpp"
+#include "opheap/module/sql/make_negation.hpp"
+#include "opheap/module/sql/select_statement.hpp"
+#include "opheap/module/sql/sort_direction.hpp"
 #include "opheap/module/sql/sql_error.hpp"
+#include "opheap/module/sql/statement.hpp"
 #include "opheap/module/sql/token.hpp"
+#include "opheap/module/sql/tokenize.hpp"
+#include "opheap/module/sql/update_statement.hpp"
 
 #include <cstddef>
 #include <string>

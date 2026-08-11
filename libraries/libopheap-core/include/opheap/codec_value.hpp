@@ -14,6 +14,11 @@
 
 namespace opheap {
 
+// codec<array>, codec<object> and codec<value> are declared in one header for the same
+// reason as array/object/value itself (see value.hpp): their encode/decode bodies call
+// back into each other by name, so splitting them relies on include order to guarantee
+// each specialization is declared before the others need it - fragile for a header any
+// caller might include first.
 template<>
 struct codec<array> {
     static constexpr std::string_view type_name = "opheap.array.v1";

@@ -2,7 +2,7 @@
 #include <opheap/testing/test_group.hpp>
 #include <opheap/testing/test_support.hpp>
 
-#include <opheap/module/sql/lexer.hpp>
+#include <opheap/module/sql/tokenize.hpp>
 #include <opheap/module/sql/sql_error.hpp>
 
 namespace opheap::testing {

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "opheap/module/cli/root_path.hpp"
+#include "opheap/module/cli/get_path.hpp"
+#include "opheap/module/cli/print_usage.hpp"
 #include "opheap/module/cli/usage_error.hpp"
 
 #include <opheap/heap.hpp>
@@ -22,24 +23,14 @@ namespace opheap::module::cli {
 
 namespace json = opheap::utils::serialization::json;
 
-inline void print_usage(std::ostream& output) {
-    output <<
-        "usage: opheap-cli [-C <heap-directory>] <command> [arguments]\n"
-        "\n"
-        "commands:\n"
-        "  create <name> <json|->  create a named JSON root\n"
-        "  get <path>             print a root or dotted object path as JSON\n"
-        "  inspect                print all named roots as a JSON object\n"
-        "  update <name> <json|-> replace an existing root\n"
-        "  delete <name>          logically delete an existing root\n"
-        "  checkpoint             compact the WAL into a snapshot\n"
-        "  verify                 verify the snapshot and WAL\n";
-}
+namespace detail {
 
 inline std::string read_json_argument(std::string_view argument, std::istream& input) {
     if (argument != "-") return std::string{argument};
     return {std::istreambuf_iterator<char>{input}, std::istreambuf_iterator<char>{}};
 }
+
+} // namespace detail
 
 // Parses arguments and runs a single opheap-cli command against a heap opened for the
 // call, writing results to `output`. Throws usage_error for usage mistakes and
@@ -125,7 +116,7 @@ inline int run(std::span<const std::string_view> arguments, std::istream& input,
     if (command == "update" && root.is_null())
         throw std::runtime_error("root not found: " + std::string{name});
 
-    const auto payload = read_json_argument(arguments[argument], input);
+    const auto payload = detail::read_json_argument(arguments[argument], input);
     try {
         root = json::json_parser{payload, root.resource()}.parse();
     } catch (const json::json_error& failure) {
@@ -135,23 +126,6 @@ inline int run(std::span<const std::string_view> arguments, std::istream& input,
     json::write_json(output, root);
     output.put('\n');
     return 0;
-}
-
-// Runs a command the way the opheap-cli process does: formats thrown errors to
-// `error` (with usage on malformed invocations) and returns a process exit code,
-// instead of propagating exceptions.
-inline int execute(std::span<const std::string_view> arguments, std::istream& input, std::ostream& output,
-    std::ostream& error) {
-    try {
-        return run(arguments, input, output);
-    } catch (const usage_error& failure) {
-        error << "opheap-cli: " << failure.what() << '\n';
-        print_usage(error);
-        return 2;
-    } catch (const std::exception& failure) {
-        error << "opheap-cli: " << failure.what() << '\n';
-        return 1;
-    }
 }
 
 } // namespace opheap::module::cli

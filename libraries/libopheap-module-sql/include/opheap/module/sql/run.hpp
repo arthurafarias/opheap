@@ -4,6 +4,7 @@
 #include "opheap/module/sql/result.hpp"
 #include "opheap/module/sql/statement_splitter.hpp"
 #include "opheap/module/sql/usage_error.hpp"
+#include "opheap/module/sql/to_display_string.hpp"
 
 #include <opheap/error.hpp>
 #include <opheap/heap.hpp>
@@ -21,9 +22,7 @@
 
 namespace opheap::module::sql {
 
-inline void print_usage(std::ostream& output) {
-    output << "usage: opheap-sql <database-directory>\n";
-}
+namespace detail {
 
 inline void print_result(std::ostream& output, const result& res) {
     if (!res.columns.empty()) {
@@ -63,6 +62,8 @@ inline bool is_blank(std::string_view text) {
     return text.find_first_not_of(" \t\r\n") == std::string_view::npos;
 }
 
+} // namespace detail
+
 // Runs the opheap-sql REPL: reads statements terminated by ';' from `input`, executes
 // them against a heap opened at the directory named by arguments[0], and writes
 // results to `output`. Throws usage_error when the database directory argument is
@@ -86,7 +87,7 @@ inline int run(std::span<const std::string_view> arguments, std::istream& input,
         if (buffer.empty()) {
             if (line == ".exit" || line == ".quit") break;
             if (line == ".tables") {
-                print_result(output, interp.list_tables());
+                detail::print_result(output, interp.list_tables());
                 continue;
             }
         }
@@ -96,34 +97,20 @@ inline int run(std::span<const std::string_view> arguments, std::istream& input,
         while (auto statement = extract_statement(buffer)) {
             auto [text, consumed] = *statement;
             buffer.erase(0, consumed);
-            if (is_blank(text)) continue;
+            if (detail::is_blank(text)) continue;
             try {
-                print_result(output, interp.execute(text));
+                detail::print_result(output, interp.execute(text));
             } catch (const opheap::error& err) {
                 output << "Error: " << err.what() << '\n';
             } catch (const std::exception& err) {
                 output << "Error: " << err.what() << '\n';
             }
         }
-        if (is_blank(buffer)) buffer.clear();
+        if (detail::is_blank(buffer)) buffer.clear();
     }
 
     heap.checkpoint();
     return 0;
-}
-
-// Runs the REPL the way the opheap-sql process does: formats a thrown usage_error to
-// `error` (with usage text) and returns a process exit code, instead of propagating
-// exceptions.
-inline int execute(std::span<const std::string_view> arguments, std::istream& input, std::ostream& output,
-    std::ostream& error) {
-    try {
-        return run(arguments, input, output);
-    } catch (const usage_error& failure) {
-        error << "opheap-sql: " << failure.what() << '\n';
-        print_usage(error);
-        return 2;
-    }
 }
 
 } // namespace opheap::module::sql

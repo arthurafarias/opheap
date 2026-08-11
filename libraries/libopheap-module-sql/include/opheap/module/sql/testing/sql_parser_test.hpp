@@ -2,7 +2,7 @@
 #include <opheap/testing/test_group.hpp>
 #include <opheap/testing/test_support.hpp>
 
-#include <opheap/module/sql/parser.hpp>
+#include <opheap/module/sql/parse_statement.hpp>
 #include <opheap/module/sql/sql_error.hpp>
 
 namespace opheap::testing {

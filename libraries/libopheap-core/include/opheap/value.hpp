@@ -14,6 +14,13 @@
 
 namespace opheap {
 
+// value, array and object are declared in one header as a deliberate exception to
+// "one type per header": array/object derive directly from containers of value (so
+// their own definition requires value complete), while value's copy/assignment/bind/
+// as_array/as_object bodies construct and dereference array/object (so they require
+// those complete too). That is a genuine mutual completeness cycle, not just a mutual
+// reference - splitting it across headers only works by relying on include order, which
+// silently breaks depending on which of the three headers a caller includes first.
 struct array;
 struct object;
 
