@@ -1,22 +1,18 @@
 #pragma once
 
 #include "opheap/detail/journal.hpp"
+#include "opheap/detail/snapshot_image.hpp"
 #include "opheap/storage.hpp"
 
 #include <filesystem>
 #include <functional>
 #include <memory>
 #include <span>
-#include <unordered_map>
+#include <vector>
 
 namespace opheap::detail {
 
-struct snapshot_image {
-    std::unordered_map<std::string, root_record> roots;
-    sequence_number sequence{};
-};
-
-class snapshot_store {
+struct snapshot_store {
 public:
     using payload_reader = std::function<void(const root_record&, std::uint64_t, std::span<std::byte>)>;
 

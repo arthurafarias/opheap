@@ -1,47 +1,20 @@
 #pragma once
 
-#include "opheap/memory_resource.hpp"
-#include "opheap/storage.hpp"
-#include "opheap/types.hpp"
-#include "opheap/value.hpp"
+#include "opheap/cache_info.hpp"
+#include "opheap/heap_config.hpp"
+#include "opheap/integrity_report.hpp"
+#include "opheap/make_default_storage_backend.hpp"
+#include "opheap/storage_backend.hpp"
+#include "opheap/transaction.hpp"
 
+#include <cstddef>
 #include <memory>
-#include <memory_resource>
-#include <string_view>
 
 namespace opheap {
 
-namespace detail { class heap_state; }
+namespace detail { struct heap_state; }
 
-class transaction final : public change_observer {
-public:
-    transaction() = delete;
-    transaction(transaction&&) noexcept;
-    transaction& operator=(transaction&&) noexcept;
-    transaction(const transaction&) = delete;
-    transaction& operator=(const transaction&) = delete;
-    ~transaction() override;
-
-    // Universal persistent root. Nested object/array/scalar state is expressed through value.
-    value& root(std::string_view name = "root");
-    object& object_root(std::string_view name = "root");
-
-    void commit();
-    void abort() noexcept;
-    [[nodiscard]] bool active() const noexcept;
-    [[nodiscard]] transaction_id id() const noexcept;
-    [[nodiscard]] std::size_t dirty_roots() const noexcept;
-
-    void changed(const change_event& event) noexcept override;
-
-private:
-    friend class heap;
-    explicit transaction(std::shared_ptr<detail::heap_state> state);
-    struct implementation;
-    std::unique_ptr<implementation> impl_;
-};
-
-class heap {
+struct heap {
 public:
     static heap open(heap_config config,
                      std::shared_ptr<storage_backend> storage = make_default_storage_backend());

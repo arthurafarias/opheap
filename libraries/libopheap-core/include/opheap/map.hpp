@@ -11,7 +11,7 @@
 namespace opheap {
 
 template<class K, detail::bindable V, class Compare = std::less<>>
-class map : public observable {
+struct map : public observable {
 public:
     using key_type = K;
     using mapped_type = V;

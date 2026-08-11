@@ -15,7 +15,7 @@
 
 namespace {
 
-class io_monitor {
+struct io_monitor {
 public:
     struct counters {
         std::uint64_t reads{};
@@ -90,7 +90,7 @@ private:
     bool enabled_{};
 };
 
-class monitored_file final : public opheap::storage_file {
+struct monitored_file final : public opheap::storage_file {
 public:
     monitored_file(std::filesystem::path path,
                    std::unique_ptr<opheap::storage_file> inner,
@@ -136,7 +136,7 @@ private:
     std::shared_ptr<io_monitor> monitor_;
 };
 
-class monitored_backend final : public opheap::storage_backend {
+struct monitored_backend final : public opheap::storage_backend {
 public:
     monitored_backend(std::shared_ptr<opheap::storage_backend> inner,
                       std::shared_ptr<io_monitor> monitor)

@@ -9,7 +9,7 @@ namespace opheap {
 
 // Decorates an arbitrary PMR resource and reports allocation topology changes.
 // It deliberately does not claim to observe writes to already-allocated bytes.
-class observing_resource final : public std::pmr::memory_resource {
+struct observing_resource final : public std::pmr::memory_resource {
 public:
     explicit observing_resource(
         std::pmr::memory_resource* upstream = std::pmr::get_default_resource(),

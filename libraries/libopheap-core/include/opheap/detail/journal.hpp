@@ -1,5 +1,11 @@
 #pragma once
 
+#include "opheap/detail/loc.hpp"
+#include "opheap/detail/recovery_result.hpp"
+#include "opheap/detail/root_record.hpp"
+#include "opheap/detail/root_update.hpp"
+#include "opheap/detail/source.hpp"
+#include "opheap/ids.hpp"
 #include "opheap/storage.hpp"
 #include "opheap/types.hpp"
 
@@ -14,37 +20,7 @@
 
 namespace opheap::detail {
 
-enum class source : std::uint8_t { snapshot, journal };
-
-struct loc {
-    source kind{};
-    std::uint64_t offset{};
-    std::uint64_t size{};
-    std::uint32_t checksum{};
-};
-
-struct root_record {
-    version_type version{};
-    std::string type;
-    loc payload;
-};
-
-struct root_update {
-    std::string name;
-    version_type expected_version{};
-    version_type new_version{};
-    std::string type;
-    std::vector<std::byte> payload;
-};
-
-struct recovery_result {
-    std::unordered_map<std::string, root_record> roots;
-    sequence_number last_sequence{};
-    std::size_t records{};
-    std::uint64_t valid_bytes{};
-};
-
-class journal {
+struct journal {
 public:
     journal(std::filesystem::path path,
             std::shared_ptr<storage_backend> storage,

@@ -1,13 +1,9 @@
 #pragma once
 #include "test_group.hpp"
+#include "test_observable.hpp"
 #include "test_support.hpp"
 
 namespace opheap::testing {
-
-class test_observable final : public observable {
-public:
-    void touch() { notify(change_kind::value, 4, 8); }
-};
 
 inline static test_group observer_test{"observer", {
     {"binding routes change events", [](test_context& ctx) {

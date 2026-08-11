@@ -14,10 +14,10 @@
 
 namespace opheap {
 
-class array;
-class object;
+struct array;
+struct object;
 
-class value : public observable {
+struct value : public observable {
 public:
     using array_ptr = std::shared_ptr<array>;
     using object_ptr = std::shared_ptr<object>;
@@ -91,12 +91,12 @@ private:
     std::pmr::memory_resource* resource_;
 };
 
-class array final : public vector<value> {
+struct array final : public vector<value> {
 public:
     using vector<value>::vector;
 };
 
-class object final : public map<std::string, value> {
+struct object final : public map<std::string, value> {
 public:
     using map<std::string, value>::map;
 };

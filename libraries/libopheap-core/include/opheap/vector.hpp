@@ -14,7 +14,7 @@ template<class T>
 concept observable_element = detail::bindable<T>;
 
 template<observable_element T>
-class vector : public observable {
+struct vector : public observable {
 public:
     using value_type = T;
     using container_type = std::pmr::vector<T>;

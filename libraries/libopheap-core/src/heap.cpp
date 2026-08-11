@@ -16,7 +16,7 @@
 
 namespace opheap::detail {
 
-class heap_state {
+struct heap_state {
 public:
     heap_state(heap_config config, std::shared_ptr<storage_backend> storage)
         : config(std::move(config)), storage(std::move(storage)), cache(this->config.cache_bytes) {

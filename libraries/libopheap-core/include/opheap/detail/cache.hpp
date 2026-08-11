@@ -14,7 +14,7 @@
 
 namespace opheap::detail {
 
-class payload_cache {
+struct payload_cache {
 public:
     explicit payload_cache(std::size_t limit) : limit_(limit) {}
 

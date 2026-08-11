@@ -1,12 +1,14 @@
 #pragma once
 
-#include "password_kdf.hpp"
+#include "provision_status.hpp"
+#include "remove_status.hpp"
+#include "service_config.hpp"
+#include "verify_status.hpp"
 
 #include <opheap/opheap.hpp>
 
 #include <chrono>
 #include <cstddef>
-#include <filesystem>
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -19,30 +21,7 @@
 // service, never the other way around.
 namespace credentials {
 
-struct rate_limit_policy {
-    std::size_t max_attempts{10};
-    std::chrono::steady_clock::duration window{std::chrono::seconds{60}};
-};
-
-struct service_config {
-    std::filesystem::path storage_path;
-    // Equivalent to libsodium's crypto_pwhash_OPSLIMIT/MEMLIMIT_MODERATE.
-    // Deliberately expensive: see docs/credentials-service.md's performance rule.
-    kdf_parameters kdf{.ops_limit = 3, .mem_limit = 256U * 1024U * 1024U};
-    rate_limit_policy rate_limit{};
-    std::size_t min_secret_length{8};
-    std::size_t max_principal_length{256};
-};
-
-enum class provision_status { ok, invalid_principal, invalid_secret, rate_limited };
-
-// `rejected` is returned for an unknown principal, a disabled credential, and
-// a wrong secret alike -- the caller must not be able to distinguish them.
-enum class verify_status { ok, rejected, rate_limited };
-
-enum class remove_status { ok, rate_limited };
-
-class credential_service {
+struct credential_service {
 public:
     explicit credential_service(service_config config);
 

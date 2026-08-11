@@ -31,7 +31,7 @@ namespace {
 }
 
 #if defined(_WIN32)
-class native_file final : public storage_file {
+struct native_file final : public storage_file {
 public:
   native_file(std::filesystem::path path, bool create) : path_(std::move(path)) {
     handle_ = CreateFileW(path_.wstring().c_str(), GENERIC_READ | GENERIC_WRITE,
@@ -102,7 +102,7 @@ private:
   HANDLE handle_{INVALID_HANDLE_VALUE};
 };
 #else
-class native_file final : public storage_file {
+struct native_file final : public storage_file {
 public:
   native_file(std::filesystem::path path, bool create) : path_(std::move(path)) {
     int flags = O_RDWR | O_CLOEXEC;
@@ -173,7 +173,7 @@ private:
 };
 #endif
 
-class native_storage_backend final : public storage_backend {
+struct native_storage_backend final : public storage_backend {
 public:
   std::unique_ptr<storage_file> open_file(const std::filesystem::path& path,
                                          bool create_if_missing) override {

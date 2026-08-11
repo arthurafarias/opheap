@@ -10,7 +10,7 @@
 namespace opheap {
 
 template<class T>
-class property : public observable {
+struct property : public observable {
     static_assert(!std::is_pointer_v<T>, "opheap::property does not persist raw pointers");
     static_assert(!std::is_reference_v<T>, "opheap::property cannot wrap references");
 

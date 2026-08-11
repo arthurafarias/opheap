@@ -8,7 +8,7 @@
 
 namespace opheap {
 
-class string : public observable {
+struct string : public observable {
 public:
     explicit string(std::pmr::memory_resource* resource = std::pmr::get_default_resource())
         : value_(resource), resource_(resource) {}
