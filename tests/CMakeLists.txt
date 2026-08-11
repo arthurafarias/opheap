@@ -9,7 +9,7 @@ foreach(TEST_HEADER IN LISTS OPHEAP_TEST_HEADERS)
 endforeach()
 
 add_executable(opheap_tests main.cpp "${GENERATED_TESTS}")
-target_link_libraries(opheap_tests PRIVATE opheap::opheap opheap::sql opheap::cli opheap::json)
+target_link_libraries(opheap_tests PRIVATE opheap::opheap opheap::module::sql opheap::module::cli opheap::json)
 target_include_directories(opheap_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_compile_features(opheap_tests PRIVATE cxx_std_23)
 if(MSVC)

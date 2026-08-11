@@ -1,9 +1,9 @@
 #pragma once
 
 #include "opheap/null_t.hpp"
-#include "opheap/sql/column.hpp"
-#include "opheap/sql/literal.hpp"
-#include "opheap/sql/sql_error.hpp"
+#include "opheap/module/sql/column.hpp"
+#include "opheap/module/sql/literal.hpp"
+#include "opheap/module/sql/sql_error.hpp"
 #include "opheap/value.hpp"
 
 #include <algorithm>
@@ -14,7 +14,7 @@
 #include <variant>
 #include <vector>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 [[nodiscard]] inline bool contains_column(const std::vector<column_definition>& columns, std::string_view name) {
     return std::any_of(columns.begin(), columns.end(), [&](const auto& c) { return c.name == name; });
@@ -112,4 +112,4 @@ inline void assign_literal(opheap::value& target, const literal& lit) {
     }, value);
 }
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

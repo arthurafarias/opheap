@@ -1,7 +1,7 @@
 #pragma once
 
-#include "opheap/sql/sql_error.hpp"
-#include "opheap/sql/token.hpp"
+#include "opheap/module/sql/sql_error.hpp"
+#include "opheap/module/sql/token.hpp"
 
 #include <cctype>
 #include <cstddef>
@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 namespace detail {
 
@@ -126,4 +126,4 @@ inline std::vector<token> tokenize(std::string_view text) {
     return tokens;
 }
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

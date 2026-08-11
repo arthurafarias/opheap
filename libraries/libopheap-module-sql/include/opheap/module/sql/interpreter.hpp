@@ -1,12 +1,12 @@
 #pragma once
 
 #include "opheap/heap.hpp"
-#include "opheap/sql/ast.hpp"
-#include "opheap/sql/column.hpp"
-#include "opheap/sql/parser.hpp"
-#include "opheap/sql/result.hpp"
-#include "opheap/sql/sql_error.hpp"
-#include "opheap/sql/value_bridge.hpp"
+#include "opheap/module/sql/ast.hpp"
+#include "opheap/module/sql/column.hpp"
+#include "opheap/module/sql/parser.hpp"
+#include "opheap/module/sql/result.hpp"
+#include "opheap/module/sql/sql_error.hpp"
+#include "opheap/module/sql/value_bridge.hpp"
 #include "opheap/value.hpp"
 
 #include <algorithm>
@@ -15,7 +15,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 // Maps each SQL table onto its own opheap root, named "sql.table.<name>", holding an
 // array of row objects. A single root, "sql.catalog", holds table -> column-list metadata
@@ -238,4 +238,4 @@ private:
     opheap::heap& heap_;
 };
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

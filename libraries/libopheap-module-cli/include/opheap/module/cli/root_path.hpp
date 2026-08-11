@@ -1,6 +1,6 @@
 #pragma once
 
-#include "opheap/cli/usage_error.hpp"
+#include "opheap/module/cli/usage_error.hpp"
 
 #include <opheap/transaction.hpp>
 #include <opheap/value.hpp>
@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-namespace opheap::cli {
+namespace opheap::module::cli {
 
 // Resolves a dotted path like "root.users.arthur" against a transaction's named roots.
 inline const opheap::value& get_path(opheap::transaction& transaction, std::string_view path) {
@@ -38,4 +38,4 @@ inline const opheap::value& get_path(opheap::transaction& transaction, std::stri
     return *current;
 }
 
-} // namespace opheap::cli
+} // namespace opheap::module::cli

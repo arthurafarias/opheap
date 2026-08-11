@@ -6,7 +6,7 @@
 #include <string_view>
 #include <utility>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 // Scans `buffer` for a ';' outside of a single-quoted string literal. On success returns
 // the statement text (excluding the ';') and the number of bytes consumed (including it),
@@ -27,4 +27,4 @@ namespace opheap::sql {
     return std::nullopt;
 }
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

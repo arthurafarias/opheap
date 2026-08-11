@@ -1,5 +1,5 @@
 #include <opheap/opheap.hpp>
-#include <opheap/sql/opheap_sql.hpp>
+#include <opheap/module/sql/opheap_sql.hpp>
 
 #include <algorithm>
 #include <cstdio>
@@ -9,12 +9,12 @@
 // opheap-sql: an interactive REPL for a minimal SQL dialect (CREATE TABLE, INSERT,
 // SELECT/WHERE/ORDER BY/LIMIT, UPDATE, DELETE) executed directly against an
 // opheap-backed store. The dialect and its execution engine live in the header-only
-// opheap::sql library under libraries/libopheap-sql; this file is only the terminal
-// front end.
+// opheap::module::sql library under libraries/libopheap-module-sql; this file is only
+// the terminal front end.
 
 namespace {
 
-void print_result(const opheap::sql::result& res) {
+void print_result(const opheap::module::sql::result& res) {
     if (!res.columns.empty()) {
         std::vector<std::size_t> widths(res.columns.size());
         for (std::size_t i = 0; i < res.columns.size(); ++i) widths[i] = res.columns[i].size();
@@ -25,7 +25,7 @@ void print_result(const opheap::sql::result& res) {
             std::vector<std::string> line;
             line.reserve(row.size());
             for (std::size_t i = 0; i < row.size(); ++i) {
-                auto text = opheap::sql::to_display_string(row[i]);
+                auto text = opheap::module::sql::to_display_string(row[i]);
                 widths[i] = std::max(widths[i], text.size());
                 line.push_back(std::move(text));
             }
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     }
 
     opheap::heap heap = opheap::heap::open({.path = argv[1]});
-    opheap::sql::interpreter interpreter{heap};
+    opheap::module::sql::interpreter interpreter{heap};
 
     std::cout << "opheap-sql: minimal SQL over an opheap store. "
                  "Statements end with ';'. .tables lists tables, .exit quits.\n";
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
         buffer += line;
         buffer += '\n';
-        while (auto statement = opheap::sql::extract_statement(buffer)) {
+        while (auto statement = opheap::module::sql::extract_statement(buffer)) {
             auto [text, consumed] = *statement;
             buffer.erase(0, consumed);
             if (is_blank(text)) continue;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "opheap/cli/root_path.hpp"
-#include "opheap/cli/usage_error.hpp"
+#include "opheap/module/cli/root_path.hpp"
+#include "opheap/module/cli/usage_error.hpp"
 
 #include <opheap/heap.hpp>
 #include <opheap/heap_config.hpp>
@@ -18,7 +18,7 @@
 #include <string_view>
 #include <utility>
 
-namespace opheap::cli {
+namespace opheap::module::cli {
 
 namespace json = opheap::utils::serialization::json;
 
@@ -154,4 +154,4 @@ inline int execute(std::span<const std::string_view> arguments, std::istream& in
     }
 }
 
-} // namespace opheap::cli
+} // namespace opheap::module::cli

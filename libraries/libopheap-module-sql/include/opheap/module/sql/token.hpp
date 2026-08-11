@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 enum class token_kind {
     end,
@@ -29,4 +29,4 @@ struct token {
     double real_value{};
 };
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

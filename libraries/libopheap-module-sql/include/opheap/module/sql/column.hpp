@@ -1,11 +1,11 @@
 #pragma once
 
-#include "opheap/sql/sql_error.hpp"
+#include "opheap/module/sql/sql_error.hpp"
 
 #include <string>
 #include <string_view>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 enum class column_type { integer, real, text, boolean };
 
@@ -32,4 +32,4 @@ struct column_definition {
     column_type type{};
 };
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "opheap/sql/column.hpp"
-#include "opheap/sql/literal.hpp"
+#include "opheap/module/sql/column.hpp"
+#include "opheap/module/sql/literal.hpp"
 
 #include <memory>
 #include <optional>
@@ -10,7 +10,7 @@
 #include <variant>
 #include <vector>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 enum class expression_kind { comparison, logical, negation };
 enum class comparison_operator { eq, neq, lt, lte, gt, gte };
@@ -97,4 +97,4 @@ struct delete_statement {
 using statement = std::variant<create_table_statement, insert_statement, select_statement,
                                 update_statement, delete_statement>;
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

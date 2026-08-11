@@ -1,12 +1,12 @@
 #pragma once
 
-#include "opheap/sql/literal.hpp"
+#include "opheap/module/sql/literal.hpp"
 
 #include <cstddef>
 #include <string>
 #include <vector>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 struct result {
     std::string message{};
@@ -15,4 +15,4 @@ struct result {
     std::size_t rows_affected{0};
 };
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

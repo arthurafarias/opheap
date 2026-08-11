@@ -9,8 +9,8 @@ option(OPHEAP_ENABLE_SANITIZERS "Enable ASan and UBSan" OFF)
 
 add_subdirectory(libraries/libopheap-core)
 add_subdirectory(libraries/libopheap-utils-serialization-json)
-add_subdirectory(libraries/libopheap-sql)
-add_subdirectory(libraries/libopheap-cli)
+add_subdirectory(libraries/libopheap-module-sql)
+add_subdirectory(libraries/libopheap-module-cli)
 
 if(OPHEAP_BUILD_APPLICATIONS)
     add_subdirectory(applications/opheap-cli)

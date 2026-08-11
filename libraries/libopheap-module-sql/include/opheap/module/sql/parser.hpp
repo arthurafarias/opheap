@@ -1,9 +1,9 @@
 #pragma once
 
-#include "opheap/sql/ast.hpp"
-#include "opheap/sql/lexer.hpp"
-#include "opheap/sql/sql_error.hpp"
-#include "opheap/sql/token.hpp"
+#include "opheap/module/sql/ast.hpp"
+#include "opheap/module/sql/lexer.hpp"
+#include "opheap/module/sql/sql_error.hpp"
+#include "opheap/module/sql/token.hpp"
 
 #include <cstddef>
 #include <string>
@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 namespace detail {
 
@@ -224,4 +224,4 @@ inline statement parse_statement(std::string_view text) {
     return result;
 }
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

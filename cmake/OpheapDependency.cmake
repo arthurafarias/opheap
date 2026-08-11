@@ -22,23 +22,23 @@ function(opheap_require_core)
     )
 endfunction()
 
-# Resolves the opheap::sql target for a utility application under applications/.
+# Resolves the opheap::module::sql target for a utility application under applications/.
 # Mirrors opheap_require_core(): reuse an existing target, else find_package(),
-# else fall back to the in-tree libopheap-sql so the application still builds
+# else fall back to the in-tree libopheap-module-sql so the application still builds
 # standalone on a machine with nothing installed.
-function(opheap_require_sql)
-    if(TARGET opheap::sql)
+function(opheap_require_module_sql)
+    if(TARGET opheap::module::sql)
         return()
     endif()
 
-    find_package(opheap-sql CONFIG QUIET)
-    if(TARGET opheap::sql)
+    find_package(opheap-module-sql CONFIG QUIET)
+    if(TARGET opheap::module::sql)
         return()
     endif()
 
     add_subdirectory(
-        ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries/libopheap-sql
-        ${CMAKE_BINARY_DIR}/libopheap-sql
+        ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries/libopheap-module-sql
+        ${CMAKE_BINARY_DIR}/libopheap-module-sql
     )
 endfunction()
 
@@ -62,22 +62,22 @@ function(opheap_require_json)
     )
 endfunction()
 
-# Resolves the opheap::cli target for a utility application under applications/.
+# Resolves the opheap::module::cli target for a utility application under applications/.
 # Mirrors opheap_require_core(): reuse an existing target, else find_package(),
-# else fall back to the in-tree libopheap-cli so the application still builds
+# else fall back to the in-tree libopheap-module-cli so the application still builds
 # standalone on a machine with nothing installed.
-function(opheap_require_cli)
-    if(TARGET opheap::cli)
+function(opheap_require_module_cli)
+    if(TARGET opheap::module::cli)
         return()
     endif()
 
-    find_package(opheap-cli CONFIG QUIET)
-    if(TARGET opheap::cli)
+    find_package(opheap-module-cli CONFIG QUIET)
+    if(TARGET opheap::module::cli)
         return()
     endif()
 
     add_subdirectory(
-        ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries/libopheap-cli
-        ${CMAKE_BINARY_DIR}/libopheap-cli
+        ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries/libopheap-module-cli
+        ${CMAKE_BINARY_DIR}/libopheap-module-cli
     )
 endfunction()

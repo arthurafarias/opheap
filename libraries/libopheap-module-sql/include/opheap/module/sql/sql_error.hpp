@@ -2,8 +2,8 @@
 
 #include "opheap/error.hpp"
 
-namespace opheap::sql {
+namespace opheap::module::sql {
 
 struct sql_error : public opheap::error { using opheap::error::error; };
 
-} // namespace opheap::sql
+} // namespace opheap::module::sql

@@ -2,7 +2,7 @@
 #include "test_group.hpp"
 #include "test_support.hpp"
 
-#include <opheap/cli/opheap_cli.hpp>
+#include <opheap/module/cli/opheap_cli.hpp>
 
 #include <sstream>
 #include <string>
@@ -17,7 +17,7 @@ int run_cli(std::vector<std::string_view> arguments, std::string input, std::str
     std::istringstream in{std::move(input)};
     std::ostringstream out;
     std::ostringstream err;
-    const auto code = opheap::cli::execute(arguments, in, out, err);
+    const auto code = opheap::module::cli::execute(arguments, in, out, err);
     output = out.str();
     return code;
 }
@@ -72,7 +72,7 @@ inline static test_group cli_test{"cli", {
         std::istringstream in{""};
         std::ostringstream out;
         std::ostringstream err;
-        const auto code = opheap::cli::execute(
+        const auto code = opheap::module::cli::execute(
             std::vector<std::string_view>{"-C", directory.string(), "get", "doc"}, in, out, err);
         ctx.check(code == 1);
         ctx.check(err.str().find("root not found") != std::string::npos);
@@ -103,7 +103,7 @@ inline static test_group cli_test{"cli", {
         std::istringstream in{""};
         std::ostringstream out;
         std::ostringstream err;
-        const auto code = opheap::cli::execute(
+        const auto code = opheap::module::cli::execute(
             std::vector<std::string_view>{"-C", directory.string(), "create", "doc"}, in, out, err);
         ctx.check(code == 2);
         ctx.check(err.str().find("usage:") != std::string::npos);
@@ -112,7 +112,7 @@ inline static test_group cli_test{"cli", {
         std::istringstream in{""};
         std::ostringstream out;
         std::ostringstream err;
-        const auto code = opheap::cli::execute(std::vector<std::string_view>{}, in, out, err);
+        const auto code = opheap::module::cli::execute(std::vector<std::string_view>{}, in, out, err);
         ctx.check(code == 2);
         ctx.check(out.str().find("usage:") != std::string::npos);
     }},

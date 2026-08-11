@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-namespace opheap::cli {
+namespace opheap::module::cli {
 
 // Raised for malformed command-line usage, as opposed to domain errors (missing
 // root, etc.), so run() can tell the two apart and decide whether to print usage.
@@ -13,4 +13,4 @@ public:
     using std::runtime_error::runtime_error;
 };
 
-} // namespace opheap::cli
+} // namespace opheap::module::cli

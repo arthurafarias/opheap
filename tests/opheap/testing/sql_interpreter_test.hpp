@@ -3,8 +3,8 @@
 #include "test_support.hpp"
 
 #include <opheap/heap.hpp>
-#include <opheap/sql/interpreter.hpp>
-#include <opheap/sql/sql_error.hpp>
+#include <opheap/module/sql/interpreter.hpp>
+#include <opheap/module/sql/sql_error.hpp>
 
 namespace opheap::testing {
 
@@ -12,7 +12,7 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"create/insert/select round trip", [](test_context& ctx) {
         auto directory = temporary_directory("sql-basic");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
 
         sql.execute("CREATE TABLE users (id INTEGER, name TEXT, active BOOLEAN, score REAL)");
         sql.execute("INSERT INTO users (id, name, active, score) VALUES (1, 'Arthur', true, 9.5), "
@@ -28,7 +28,7 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"INSERT coerces integer literals into REAL columns", [](test_context& ctx) {
         auto directory = temporary_directory("sql-coerce");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
         sql.execute("CREATE TABLE t (a REAL)");
         sql.execute("INSERT INTO t (a) VALUES (5)");
         auto res = sql.execute("SELECT a FROM t");
@@ -37,7 +37,7 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"unspecified columns default to NULL", [](test_context& ctx) {
         auto directory = temporary_directory("sql-null-default");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
         sql.execute("CREATE TABLE t (a INTEGER, b TEXT)");
         sql.execute("INSERT INTO t (a) VALUES (1)");
         auto res = sql.execute("SELECT b FROM t");
@@ -46,7 +46,7 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"WHERE filters with AND/OR/NOT and comparisons", [](test_context& ctx) {
         auto directory = temporary_directory("sql-where");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
         sql.execute("CREATE TABLE t (a INTEGER, b TEXT)");
         sql.execute("INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'y'), (3, 'x')");
 
@@ -61,7 +61,7 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"ORDER BY DESC and LIMIT", [](test_context& ctx) {
         auto directory = temporary_directory("sql-order-limit");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
         sql.execute("CREATE TABLE t (a INTEGER)");
         sql.execute("INSERT INTO t (a) VALUES (3), (1), (2)");
         auto res = sql.execute("SELECT a FROM t ORDER BY a DESC LIMIT 2");
@@ -72,7 +72,7 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"UPDATE mutates matching rows only", [](test_context& ctx) {
         auto directory = temporary_directory("sql-update");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
         sql.execute("CREATE TABLE t (a INTEGER, b TEXT)");
         sql.execute("INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'x')");
         auto update = sql.execute("UPDATE t SET b = 'y' WHERE a = 1");
@@ -84,7 +84,7 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"DELETE removes matching rows only", [](test_context& ctx) {
         auto directory = temporary_directory("sql-delete");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
         sql.execute("CREATE TABLE t (a INTEGER)");
         sql.execute("INSERT INTO t (a) VALUES (1), (2), (3)");
         auto deleted = sql.execute("DELETE FROM t WHERE a = 2");
@@ -98,13 +98,13 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
         auto directory = temporary_directory("sql-restart");
         {
             auto heap = opheap::heap::open({.path = directory});
-            opheap::sql::interpreter sql{heap};
+            opheap::module::sql::interpreter sql{heap};
             sql.execute("CREATE TABLE t (a INTEGER)");
             sql.execute("INSERT INTO t (a) VALUES (7)");
         }
         {
             auto heap = opheap::heap::open({.path = directory});
-            opheap::sql::interpreter sql{heap};
+            opheap::module::sql::interpreter sql{heap};
             auto res = sql.execute("SELECT a FROM t");
             ctx.equal(res.rows.size(), std::size_t{1});
             ctx.equal(std::get<std::int64_t>(res.rows[0][0]), std::int64_t{7});
@@ -113,7 +113,7 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"list_tables reports created tables", [](test_context& ctx) {
         auto directory = temporary_directory("sql-list-tables");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
         sql.execute("CREATE TABLE a (x INTEGER)");
         sql.execute("CREATE TABLE b (x INTEGER)");
         auto tables = sql.list_tables();
@@ -122,13 +122,13 @@ inline static test_group sql_interpreter_test{"sql_interpreter", {
     {"rejects operations against unknown tables and columns", [](test_context& ctx) {
         auto directory = temporary_directory("sql-errors");
         auto heap = opheap::heap::open({.path = directory});
-        opheap::sql::interpreter sql{heap};
+        opheap::module::sql::interpreter sql{heap};
         sql.execute("CREATE TABLE t (a INTEGER)");
 
-        ctx.throws<opheap::sql::sql_error>([&] { sql.execute("SELECT * FROM missing"); });
-        ctx.throws<opheap::sql::sql_error>([&] { sql.execute("SELECT missing_column FROM t"); });
-        ctx.throws<opheap::sql::sql_error>([&] { sql.execute("CREATE TABLE t (a INTEGER)"); });
-        ctx.throws<opheap::sql::sql_error>([&] { sql.execute("INSERT INTO t (a) VALUES ('not an int')"); });
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("SELECT * FROM missing"); });
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("SELECT missing_column FROM t"); });
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("CREATE TABLE t (a INTEGER)"); });
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("INSERT INTO t (a) VALUES ('not an int')"); });
     }},
 }};
 
