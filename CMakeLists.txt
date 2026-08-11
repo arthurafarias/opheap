@@ -6,6 +6,7 @@ option(OPHEAP_BUILD_BENCHMARKS "Build opheap benchmarks" OFF)
 option(OPHEAP_BUILD_EXAMPLES "Build opheap examples" ON)
 option(OPHEAP_BUILD_APPLICATIONS "Build opheap-cli and opheap-browser" ON)
 option(OPHEAP_ENABLE_SANITIZERS "Enable ASan and UBSan" OFF)
+option(OPHEAP_ENABLE_COVERAGE "Instrument opheap_tests for gcov/gcovr coverage" OFF)
 
 add_subdirectory(libraries/libopheap-core)
 add_subdirectory(libraries/libopheap-utils-serialization-json)

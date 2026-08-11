@@ -27,3 +27,51 @@ else()
     target_compile_options(opheap_tests PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_test(NAME opheap_tests COMMAND opheap_tests)
+
+if(OPHEAP_ENABLE_COVERAGE)
+    if(MSVC)
+        message(FATAL_ERROR "OPHEAP_ENABLE_COVERAGE requires gcc or clang")
+    endif()
+    target_compile_options(opheap_tests PRIVATE --coverage -O0 -g)
+    target_link_options(opheap_tests PRIVATE --coverage)
+
+    find_program(OPHEAP_GCOVR_EXECUTABLE gcovr)
+    if(OPHEAP_GCOVR_EXECUTABLE)
+        # Pin the report's embedded timestamp to HEAD's commit date rather than wall
+        # clock time, so regenerating docs/coverage for an unchanged HEAD reproduces
+        # byte-identical output (CI diffs docs/coverage against this target's output
+        # to catch a coverage report that wasn't regenerated after a coverage-affecting change).
+        execute_process(
+            COMMAND git log -1 --format=%cI
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            OUTPUT_VARIABLE OPHEAP_COVERAGE_TIMESTAMP
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        # Regenerates docs/coverage: run `cmake --build <build-dir> --target coverage`
+        # from a build directory configured with -DOPHEAP_ENABLE_COVERAGE=ON.
+        # gcovr matches --filter/--exclude against paths relative to its working
+        # directory, so it must run from CMAKE_SOURCE_DIR for the "libraries/..."
+        # patterns below to line up (ctest is pointed at the build dir explicitly).
+        add_custom_target(coverage
+            COMMAND ${CMAKE_CTEST_COMMAND} --test-dir "${CMAKE_BINARY_DIR}" --output-on-failure
+            COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_SOURCE_DIR}/docs/coverage"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/docs/coverage"
+            COMMAND ${OPHEAP_GCOVR_EXECUTABLE}
+                --root "${CMAKE_SOURCE_DIR}"
+                --filter "libraries/.*/include/.*"
+                --exclude ".*/testing/.*"
+                --exclude ".*/tests/.*"
+                --html-details "${CMAKE_SOURCE_DIR}/docs/coverage/index.html"
+                --html-title "opheap coverage"
+                --timestamp "${OPHEAP_COVERAGE_TIMESTAMP}"
+                --print-summary
+                "${CMAKE_BINARY_DIR}"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            DEPENDS opheap_tests
+            COMMENT "Running opheap_tests and generating HTML coverage under docs/coverage"
+        )
+    else()
+        message(WARNING "gcovr not found: `coverage` target will not be available")
+    endif()
+endif()

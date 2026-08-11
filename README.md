@@ -2,6 +2,8 @@
 
 **Observable, transactional persistence for STL-shaped C++ state.**
 
+[![Line coverage: 90.3%](https://img.shields.io/badge/coverage-90.3%25-brightgreen)](https://arthurafarias.github.io/opheap/coverage/index.html)
+
 `opheap` is an experiment in treating durable storage as a lower level of the memory hierarchy instead of forcing application state through a relational model.
 
 One motivation for `opheap` was wanting to use SQLite's database engine independently of its frontend, so applications could provide the interface that best fit their needs. SQLite's backend is not especially object-oriented-friendly, so `opheap` was redesigned from scratch around an object-oriented model.

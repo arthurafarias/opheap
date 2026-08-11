@@ -41,3 +41,33 @@ jobs:
         env:
           ASAN_OPTIONS: detect_leaks=1
         run: ctest --test-dir build-asan --output-on-failure
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gcovr
+        run: pip install --user gcovr
+      - name: Configure
+        run: cmake -S . -B build-coverage -DOPHEAP_BUILD_TESTS=ON -DOPHEAP_BUILD_EXAMPLES=OFF -DOPHEAP_BUILD_APPLICATIONS=OFF -DOPHEAP_ENABLE_COVERAGE=ON
+      - name: Build and run coverage
+        run: cmake --build build-coverage --target coverage --parallel 2 | tee coverage-summary.txt
+      - name: Write job summary
+        run: |
+          {
+            echo '## Coverage'
+            echo '```'
+            tail -n 3 coverage-summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Flag stale docs/coverage
+        run: |
+          if ! git diff --quiet -- docs/coverage; then
+            echo "::warning::docs/coverage is stale for this commit; regenerate with 'cmake --build <build-dir> --target coverage' (requires -DOPHEAP_ENABLE_COVERAGE=ON) and commit the result."
+          fi
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: docs/coverage
