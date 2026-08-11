@@ -183,11 +183,15 @@ Requirements:
 ```bash
 cmake -S . -B build \
   -DOPHEAP_BUILD_TESTS=ON \
-  -DOPHEAP_BUILD_EXAMPLES=ON
+  -DOPHEAP_BUILD_EXAMPLES=ON \
+  -DOPHEAP_BUILD_APPLICATIONS=ON
 
 cmake --build build
 ctest --test-dir build --output-on-failure
 ```
+
+`OPHEAP_BUILD_APPLICATIONS` (on by default) builds the `opheap-cli`, `opheap-sql` and
+`opheap-browser` executables described below.
 
 Sanitizers:
 
@@ -198,6 +202,44 @@ cmake -S . -B build-asan \
 cmake --build build-asan
 ctest --test-dir build-asan --output-on-failure
 ```
+
+## Repository layout
+
+The workspace is a CMake super-build split into independently consumable pieces:
+
+```text
+libraries/
+  libopheap-core                     header-only engine (opheap::opheap)
+  libopheap-utils-serialization-json header-only JSON codec for opheap::value
+  libopheap-module-cli               header-only opheap-cli implementation
+  libopheap-module-sql               header-only opheap-sql lexer/parser/interpreter/REPL
+applications/
+  opheap-cli                         JSON root CRUD tool
+  opheap-sql                         interactive SQL REPL over an opheap store
+  opheap-browser                     placeholder for an interactive tree viewer
+```
+
+Each application is a thin `argv`/`stdin`/`stdout` front end; the actual argument
+parsing, encoding and execution logic live in the header-only module library it links
+against.
+
+## Command-line tools
+
+```bash
+opheap-cli -C service-state create doc '{"name":"Arthur","age":42}'
+opheap-cli -C service-state get doc.name
+opheap-cli -C service-state inspect
+
+opheap-sql service-state
+sql> CREATE TABLE users (id INT, name TEXT, age INT);
+sql> INSERT INTO users VALUES (1, 'Arthur', 42);
+sql> SELECT name, age FROM users WHERE age > 18 ORDER BY age LIMIT 10;
+```
+
+`opheap-sql` supports `CREATE TABLE`, `INSERT`, `SELECT` (`WHERE`/`ORDER BY`/`LIMIT`,
+with `AND`/`OR`/`NOT` predicates), `UPDATE` and `DELETE`. `opheap-browser` currently only
+prints that it is not yet implemented. See [`docs/tooling.md`](docs/tooling.md) for full
+command references.
 
 ## Testing architecture
 
@@ -232,6 +274,8 @@ Current coverage includes:
 - deterministic partial-append / failed-barrier / interrupted-checkpoint fault injection;
 - independent-root transactions;
 - actual multi-threaded independent-root commits;
+- `opheap-cli` command dispatch end to end;
+- `opheap-sql` lexing, parsing, interpretation and REPL behavior;
 - ASan and UBSan builds.
 
 ## Documentation
@@ -242,6 +286,7 @@ The complete Software Requirements Specification and design documentation are un
 - Programming model
 - Durability protocol
 - API
+- Command-line tools
 - Testing
 - Benchmarking
 - Future Boost.Beast credentials REST service

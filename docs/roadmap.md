@@ -24,7 +24,11 @@ title: Roadmap
 - bounded LRU cache for encoded committed payloads;
 - lazy root payload materialization;
 - chunked checkpoint copy independent of total dataset size;
-- cache accounting through `heap::cache()`.
+- cache accounting through `heap::cache()`;
+- workspace split into `libraries/` (core, JSON serialization, CLI and SQL modules) and `applications/` (thin process front ends);
+- `opheap-cli`: JSON root create/get/inspect/update/delete/checkpoint/verify over a heap directory;
+- `opheap-sql`: an interactive REPL for a minimal SQL dialect (`CREATE TABLE`, `INSERT`, `SELECT`/`WHERE`/`ORDER BY`/`LIMIT`, `UPDATE`, `DELETE`) against an opheap store;
+- `opheap-browser` scaffolded as a placeholder executable; the interactive tree viewer itself is not yet implemented.
 
 ## 0.3 — granularity
 

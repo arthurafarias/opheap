@@ -92,6 +92,25 @@ The architecture is conceptually related to:
 `opheap` combines those ideas with explicit transactions and a portable WAL rather than requiring byte-addressable persistent memory hardware.
 
 
+## Repository layout
+
+The workspace is a CMake super-build over separately consumable pieces rather than one
+monolithic target:
+
+| Path | Role |
+|---|---|
+| `libraries/libopheap-core` | The header-only persistence engine described above (`opheap::opheap`). |
+| `libraries/libopheap-utils-serialization-json` | Header-only JSON parser/writer for `opheap::value` (`opheap::json`), independent of any one front end. |
+| `libraries/libopheap-module-cli` | Header-only argument parsing and command dispatch for `opheap-cli` (`opheap::module::cli`). |
+| `libraries/libopheap-module-sql` | Header-only lexer, parser, AST, interpreter and REPL for `opheap-sql`'s SQL dialect (`opheap::module::sql`). |
+| `applications/opheap-cli` | Process entry point over `opheap::module::cli`: a JSON root CRUD tool. |
+| `applications/opheap-sql` | Process entry point over `opheap::module::sql`: an interactive SQL REPL against an opheap store. |
+| `applications/opheap-browser` | Placeholder process for an interactive object-tree viewer; not yet implemented. |
+
+Each module library is independently linkable — `libopheap-module-sql` does not depend on
+`libopheap-module-cli` or vice versa — and each application is a thin `argv`/`stdin`/`stdout`
+adapter with no logic beyond wiring. See [Tooling](tooling.md) for command references.
+
 ## Demand-loaded committed state
 
 `heap_state` no longer owns a `name -> payload` map. It owns `name -> {version, type, loc}` metadata. A transaction first probes the bounded payload cache; on a miss the locator is read from either the snapshot or WAL and the encoded root is decoded into that transaction's PMR pool. Checkpoints stream payloads in fixed-size chunks, so checkpoint memory use is bounded independently of durable dataset size.

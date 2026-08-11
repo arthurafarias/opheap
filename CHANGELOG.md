@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased — modular workspace, CLI and SQL front ends
+
+- Split the project into `libraries/` (header-only) and `applications/` (thin process
+  front ends) under a CMake super-build.
+- Extracted the core engine into `libraries/libopheap-core`.
+- Extracted JSON serialization for `opheap::value` into
+  `libraries/libopheap-utils-serialization-json`, shared by the CLI and other
+  consumers instead of being CLI-only.
+- Added `libraries/libopheap-module-cli` and the `opheap-cli` application: JSON root
+  create/get/inspect/update/delete, plus `checkpoint` and `verify`, over a heap
+  directory.
+- Added `libraries/libopheap-module-sql` and the `opheap-sql` application: an
+  interactive REPL for a minimal SQL dialect (`CREATE TABLE`, `INSERT`,
+  `SELECT`/`WHERE`/`ORDER BY`/`LIMIT`, `UPDATE`, `DELETE`) executed directly against an
+  opheap-backed store.
+- Scaffolded `applications/opheap-browser` as a placeholder executable; the interactive
+  tree viewer is not yet implemented.
+- Added `OPHEAP_BUILD_APPLICATIONS` CMake option (on by default).
+- Added CLI and SQL (lexer/parser/interpreter/REPL) test coverage and a shared
+  deterministic fault-injection test harness.
+
 ## 0.2.0 — demand-loaded committed state
 
 - Replaced resident committed root payloads with compact payload locators.

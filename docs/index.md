@@ -44,6 +44,7 @@ A C++ allocator can see allocation and deallocation, but it cannot intercept an 
 - [Programming model](programming-model.md)
 - [Durability and recovery](durability.md)
 - [API reference](api.md)
+- [Command-line tools](tooling.md)
 - [Testing strategy](testing.md)
 - [Benchmarking](benchmarks.md)
 - [Boost.Beast credentials-service integration](credentials-service.md)
