@@ -21,3 +21,23 @@ function(opheap_require_core)
         ${CMAKE_BINARY_DIR}/libopheap-core
     )
 endfunction()
+
+# Resolves the opheap::sql target for a utility application under applications/.
+# Mirrors opheap_require_core(): reuse an existing target, else find_package(),
+# else fall back to the in-tree libopheap-sql so the application still builds
+# standalone on a machine with nothing installed.
+function(opheap_require_sql)
+    if(TARGET opheap::sql)
+        return()
+    endif()
+
+    find_package(opheap-sql CONFIG QUIET)
+    if(TARGET opheap::sql)
+        return()
+    endif()
+
+    add_subdirectory(
+        ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries/libopheap-sql
+        ${CMAKE_BINARY_DIR}/libopheap-sql
+    )
+endfunction()

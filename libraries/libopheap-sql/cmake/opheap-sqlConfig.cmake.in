@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+if(NOT TARGET opheap::opheap)
+    find_dependency(opheap CONFIG)
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/opheapSqlTargets.cmake")
+check_required_components(opheap-sql)

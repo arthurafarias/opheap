@@ -10,10 +10,13 @@
 #include "opheap/transaction_error.hpp"
 
 #include <atomic>
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
+#include <string>
+#include <vector>
 
 namespace opheap {
 
@@ -34,6 +37,7 @@ public:
     void checkpoint();
     [[nodiscard]] integrity_report check_integrity() const noexcept;
     [[nodiscard]] std::size_t root_count() const noexcept;
+    [[nodiscard]] std::vector<std::string> root_names() const;
     [[nodiscard]] cache_info cache() const noexcept;
     void close() noexcept;
 
@@ -62,6 +66,18 @@ inline std::size_t heap::root_count() const noexcept {
     if (!state_) return 0;
     std::shared_lock lock{state_->roots_mutex};
     return state_->roots.size();
+}
+inline std::vector<std::string> heap::root_names() const {
+    if (!state_) return {};
+    std::shared_lock lock{state_->roots_mutex};
+    std::vector<std::string> names;
+    names.reserve(state_->roots.size());
+    for (const auto& [name, record] : state_->roots) {
+        (void)record;
+        names.push_back(name);
+    }
+    std::sort(names.begin(), names.end());
+    return names;
 }
 inline cache_info heap::cache() const noexcept {
     if (!state_) return {};

@@ -8,6 +8,7 @@ option(OPHEAP_BUILD_APPLICATIONS "Build opheap-cli and opheap-browser" ON)
 option(OPHEAP_ENABLE_SANITIZERS "Enable ASan and UBSan" OFF)
 
 add_subdirectory(libraries/libopheap-core)
+add_subdirectory(libraries/libopheap-sql)
 
 if(OPHEAP_BUILD_APPLICATIONS)
     add_subdirectory(applications/opheap-cli)
