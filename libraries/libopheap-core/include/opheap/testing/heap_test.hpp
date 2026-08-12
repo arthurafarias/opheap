@@ -155,6 +155,37 @@ struct heap_test : public test_group {
         ctx.equal(read.object_root("a").at("v").as_integer(), std::int64_t{1});
         ctx.equal(read.object_root("b").at("v").as_integer(), std::int64_t{2});
     }},
+    {"open rejects an empty path", [](test_context& ctx) {
+        ctx.throws<storage_error>([&] { (void)opheap::heap::open({.path = ""}); });
+    }},
+    {"begin rejects a closed heap", [](test_context& ctx) {
+        auto directory = temporary_directory("heap-closed-begin");
+        auto heap = opheap::heap::open({.path = directory});
+        heap.close();
+        ctx.throws<transaction_error>([&] { (void)heap.begin(); });
+    }},
+    {"checkpoint rejects a moved-from heap", [](test_context& ctx) {
+        auto directory = temporary_directory("heap-moved-checkpoint");
+        auto heap = opheap::heap::open({.path = directory});
+        auto moved = std::move(heap);
+        ctx.throws<transaction_error>([&] { heap.checkpoint(); });
+    }},
+    {"commit rejects a transaction from a closed heap", [](test_context& ctx) {
+        auto directory = temporary_directory("heap-closed-commit");
+        auto heap = opheap::heap::open({.path = directory});
+        auto tx = heap.begin();
+        tx.object_root()["n"] = 1;
+        heap.close();
+        ctx.throws<transaction_error>([&] { tx.commit(); });
+    }},
+    {"load rejects a root recorded under a foreign codec type", [](test_context& ctx) {
+        auto directory = temporary_directory("heap-state-type-mismatch");
+        auto backend = make_default_storage_backend();
+        detail::heap_state state{opheap::heap_config{.path = directory}, backend};
+        state.roots.emplace("bad", detail::root_record{
+            1, "not.opheap.value", detail::loc{detail::source::journal, 0, 0, 0}});
+        ctx.throws<type_error>([&] { (void)state.load("bad"); });
+    }},
     }) {}
 };
 

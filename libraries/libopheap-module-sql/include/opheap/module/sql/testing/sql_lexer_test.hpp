@@ -55,6 +55,9 @@ struct sql_lexer_test : public test_group {
     {"rejects unexpected characters", [](test_context& ctx) {
         ctx.throws<opheap::module::sql::sql_error>([&] { (void)opheap::module::sql::tokenize("SELECT # FROM t"); });
     }},
+    {"rejects an integer literal that overflows", [](test_context& ctx) {
+        ctx.throws<opheap::module::sql::sql_error>([&] { (void)opheap::module::sql::tokenize("99999999999999999999"); });
+    }},
     }) {}
 };
 

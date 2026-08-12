@@ -7,7 +7,7 @@ description: Observable transactional persistence for STL-shaped C++ state.
 <div class="hero">
 <h1>Make storage feel like memory again.</h1>
 <p><strong>opheap</strong> is a C++23 transactional persistent heap built around observable STL-style objects. Model service state as a Variant tree, mutate it normally, then commit the changed logical roots to durable storage.</p>
-<p><a href="coverage/index.html"><img src="https://img.shields.io/badge/coverage-90.3%25-brightgreen" alt="Line coverage: 90.3%"></a></p>
+<p><a href="coverage/index.html"><img src="https://img.shields.io/badge/coverage-93.6%25-brightgreen" alt="Line coverage: 93.6%"></a></p>
 </div>
 
 ```cpp
@@ -48,7 +48,7 @@ A C++ allocator can see allocation and deallocation, but it cannot intercept an 
 - [Command-line tools](tooling.md)
 - [Testing strategy](testing.md)
 - [Coverage report](coverage/index.html)
-- [Benchmarking](benchmarks.md)
+- [Benchmarking](benchmarks.md) &middot; [comparative infographic](benchmarks-infographic.md)
 - [Boost.Beast credentials-service integration](credentials-service.md)
 - [Software Requirements Specification](SRS.md)
 - [Roadmap](roadmap.md)

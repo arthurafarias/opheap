@@ -131,6 +131,33 @@ struct sql_interpreter_test : public test_group {
         ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("CREATE TABLE t (a INTEGER)"); });
         ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("INSERT INTO t (a) VALUES ('not an int')"); });
     }},
+    {"rejects an unknown column in ORDER BY, INSERT, UPDATE, and WHERE", [](test_context& ctx) {
+        auto directory = temporary_directory("sql-unknown-column");
+        auto heap = opheap::heap::open({.path = directory});
+        opheap::module::sql::interpreter sql{heap};
+        sql.execute("CREATE TABLE t (a INTEGER)");
+        sql.execute("INSERT INTO t (a) VALUES (1)");
+
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("SELECT a FROM t ORDER BY missing"); });
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("INSERT INTO t (missing) VALUES (1)"); });
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("UPDATE t SET missing = 1"); });
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("SELECT a FROM t WHERE missing = 1"); });
+    }},
+    {"rejects an INSERT whose value count does not match its column count", [](test_context& ctx) {
+        auto directory = temporary_directory("sql-value-count");
+        auto heap = opheap::heap::open({.path = directory});
+        opheap::module::sql::interpreter sql{heap};
+        sql.execute("CREATE TABLE t (a INTEGER, b INTEGER)");
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("INSERT INTO t (a, b) VALUES (1)"); });
+    }},
+    {"rejects comparing incomparable types in WHERE", [](test_context& ctx) {
+        auto directory = temporary_directory("sql-incomparable");
+        auto heap = opheap::heap::open({.path = directory});
+        opheap::module::sql::interpreter sql{heap};
+        sql.execute("CREATE TABLE t (a TEXT)");
+        sql.execute("INSERT INTO t (a) VALUES ('x')");
+        ctx.throws<opheap::module::sql::sql_error>([&] { sql.execute("SELECT a FROM t WHERE a > 5"); });
+    }},
     }) {}
 };
 

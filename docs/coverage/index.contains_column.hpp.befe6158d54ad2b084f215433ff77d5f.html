@@ -75,14 +75,14 @@
   </div>
   <div class="Box-row Box-row--focus-gray py-2 d-flex">
     <div role="gridcell" class="color-fg-muted flex-auto min-width-0 col-md-2"><a href="#l12">auto opheap::module::sql::contains_column(std::vector&lt;opheap::module::sql::column_definition, std::allocator&lt;opheap::module::sql::column_definition&gt; &gt; const&amp;, std::basic_string_view&lt;char, std::char_traits&lt;char&gt; &gt;)::{lambda(auto:1 const&amp;)#1}::operator()&lt;opheap::module::sql::column_definition&gt;(opheap::module::sql::column_definition const&amp;) const (libraries/libopheap-module-sql/include/opheap/module/sql/contains_column.hpp:12)</a>    </div>
-    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 d-flex flex-justify-end flex-wrap flex-items-baseline" data-sort="23">called 23 times</div>
+    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 d-flex flex-justify-end flex-wrap flex-items-baseline" data-sort="27">called 27 times</div>
     <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
     <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">-%</div>
     <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
   </div>
   <div class="Box-row Box-row--focus-gray py-2 d-flex">
     <div role="gridcell" class="color-fg-muted flex-auto min-width-0 col-md-2"><a href="#l11">opheap::module::sql::contains_column(std::vector&lt;opheap::module::sql::column_definition, std::allocator&lt;opheap::module::sql::column_definition&gt; &gt; const&amp;, std::basic_string_view&lt;char, std::char_traits&lt;char&gt; &gt;) (libraries/libopheap-module-sql/include/opheap/module/sql/contains_column.hpp:11)</a>    </div>
-    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 d-flex flex-justify-end flex-wrap flex-items-baseline" data-sort="19">called 19 times</div>
+    <div role="gridcell" class="color-fg-muted flex-auto min-width-0 d-flex flex-justify-end flex-wrap flex-items-baseline" data-sort="23">called 23 times</div>
     <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
     <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">-%</div>
     <div role="gridcell" class="color-fg-muted d-flex flex-justify-end flex-wrap col-2">100.0%</div>
@@ -189,14 +189,14 @@
         <td class="lineno"><a id="l11" href="#l11">11</a></td>
         <td class="linebranch">
         </td>
-        <td class="linecount coveredLine show_coveredLine">19</td>
+        <td class="linecount coveredLine show_coveredLine">23</td>
         <td class="src  coveredLine show_coveredLine"><span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">contains_column</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">column_definition</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">columns</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="w"> </span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="p">{</span></td>
       </tr>
       <tr class="source-line">
         <td class="lineno"><a id="l12" href="#l12">12</a></td>
         <td class="linebranch">
         </td>
-        <td class="linecount coveredLine show_coveredLine">42</td>
+        <td class="linecount coveredLine show_coveredLine">50</td>
         <td class="src  coveredLine show_coveredLine"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">any_of</span><span class="p">(</span><span class="n">columns</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">columns</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">name</span><span class="p">;</span><span class="w"> </span><span class="p">});</span></td>
       </tr>
       <tr class="source-line">
@@ -234,7 +234,7 @@
         <hr class="block-separator"/>
         <footer class="text-center">
           Created using <a href="http://gcovr.com/en/8.6">GCOVR (Version 8.6)</a>
-          at 2026-08-11 21:39:05+02:00
+          at 2026-08-11 22:15:34+02:00
         </footer>
       </div>
     </div>

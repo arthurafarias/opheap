@@ -21,6 +21,24 @@ struct value_test : public test_group {
         const value item{42};
         ctx.throws<type_error>([&] { (void)item.as_string(); });
     }},
+    {"every scalar accessor rejects a mismatched type", [](test_context& ctx) {
+        const value integer{42};
+        ctx.throws<type_error>([&] { (void)integer.as_bool(); });
+        ctx.throws<type_error>([&] { (void)integer.as_number(); });
+        const value string_value{"text"};
+        ctx.throws<type_error>([&] { (void)string_value.as_integer(); });
+        const value boolean{true};
+        ctx.throws<type_error>([&] { (void)boolean.as_array(); });
+        ctx.throws<type_error>([&] { (void)boolean.as_object(); });
+    }},
+    {"at() rejects a non-object value and an absent key", [](test_context& ctx) {
+        const value scalar{42};
+        ctx.throws<type_error>([&] { (void)scalar.at("missing"); });
+        value root;
+        root["present"] = 1;
+        const value& const_root = root;
+        ctx.throws<std::out_of_range>([&] { (void)const_root.at("absent"); });
+    }},
     {"move assignment keeps destination observer", [](test_context& ctx) {
         recording_observer observer;
         value item;

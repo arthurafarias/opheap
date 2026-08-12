@@ -2,7 +2,7 @@
 
 **Observable, transactional persistence for STL-shaped C++ state.**
 
-[![Line coverage: 90.3%](https://img.shields.io/badge/coverage-90.3%25-brightgreen)](https://arthurafarias.github.io/opheap/coverage/index.html)
+[![Line coverage: 93.6%](https://img.shields.io/badge/coverage-93.6%25-brightgreen)](https://arthurafarias.github.io/opheap/coverage/index.html)
 
 `opheap` is an experiment in treating durable storage as a lower level of the memory hierarchy instead of forcing application state through a relational model.
 

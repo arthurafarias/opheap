@@ -117,6 +117,123 @@ struct cli_test : public test_group {
         ctx.check(code == 2);
         ctx.check(out.str().find("usage:") != std::string::npos);
     }},
+    {"run rejects a missing -C directory argument", [](test_context& ctx) {
+        std::istringstream in{""};
+        std::ostringstream out;
+        std::vector<std::string_view> args{"-C"};
+        ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+    }},
+    {"run rejects extra arguments to no-argument commands", [](test_context& ctx) {
+        auto directory = temporary_directory("cli-run-noargs");
+        const std::string path = directory.string();
+        for (const auto* command : {"checkpoint", "verify", "inspect"}) {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, command, "extra"};
+            ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+    }},
+    {"run rejects a missing root name and extra arguments to get", [](test_context& ctx) {
+        auto directory = temporary_directory("cli-run-get");
+        const std::string path = directory.string();
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "get"};
+            ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "get", "a", "b"};
+            ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+    }},
+    {"run rejects an empty root name and extra arguments to delete", [](test_context& ctx) {
+        auto directory = temporary_directory("cli-run-delete");
+        const std::string path = directory.string();
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "create", "", "1"};
+            ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "delete", "a", "b"};
+            ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+    }},
+    {"run rejects an unknown command and a wrong argument count", [](test_context& ctx) {
+        auto directory = temporary_directory("cli-run-unknown");
+        const std::string path = directory.string();
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "frobnicate", "a"};
+            ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "create", "a", "1", "2"};
+            ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+    }},
+    {"run wraps a malformed JSON payload as a usage error", [](test_context& ctx) {
+        auto directory = temporary_directory("cli-run-bad-json");
+        const std::string path = directory.string();
+        std::istringstream in{""};
+        std::ostringstream out;
+        std::vector<std::string_view> args{"-C", path, "create", "doc", "{bad}"};
+        ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+    }},
+    {"run rejects deleting a missing root, recreating an existing one, and updating a missing one",
+        [](test_context& ctx) {
+        auto directory = temporary_directory("cli-run-domain-errors");
+        const std::string path = directory.string();
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "delete", "missing"};
+            ctx.throws<std::runtime_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "create", "doc", "1"};
+            ctx.equal(opheap::module::cli::run(args, in, out), 0);
+        }
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "create", "doc", "2"};
+            ctx.throws<std::runtime_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+        {
+            std::istringstream in{""};
+            std::ostringstream out;
+            std::vector<std::string_view> args{"-C", path, "update", "missing2", "1"};
+            ctx.throws<std::runtime_error>([&] { (void)opheap::module::cli::run(args, in, out); });
+        }
+    }},
+    {"get_path rejects malformed dotted paths", [](test_context& ctx) {
+        auto directory = temporary_directory("cli-get-path");
+        auto heap = opheap::heap::open({.path = directory});
+        auto tx = heap.begin();
+        auto& root = tx.object_root("doc");
+        root["a"] = 5;
+        root["nested"]["b"] = 1;
+        tx.commit();
+
+        auto read = heap.begin();
+        ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::get_path(read, ""); });
+        ctx.throws<opheap::module::cli::usage_error>([&] { (void)opheap::module::cli::get_path(read, "doc.."); });
+        ctx.throws<std::runtime_error>([&] { (void)opheap::module::cli::get_path(read, "missing.a"); });
+        ctx.throws<std::runtime_error>([&] { (void)opheap::module::cli::get_path(read, "doc.a.b"); });
+        ctx.throws<std::runtime_error>([&] { (void)opheap::module::cli::get_path(read, "doc.missing"); });
+    }},
     }) {}
 };
 

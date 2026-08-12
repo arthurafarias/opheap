@@ -72,6 +72,22 @@ struct sql_parser_test : public test_group {
         ctx.throws<opheap::module::sql::sql_error>([] { (void)opheap::module::sql::parse_statement("SELECT * FROM t garbage"); });
         ctx.throws<opheap::module::sql::sql_error>([] { (void)opheap::module::sql::parse_statement("CREATE TABLE t ()"); });
     }},
+    {"rejects an unrecognized statement keyword", [](test_context& ctx) {
+        ctx.throws<opheap::module::sql::sql_error>([] { (void)opheap::module::sql::parse_statement("DROP TABLE t"); });
+    }},
+    {"rejects an invalid column type in CREATE TABLE", [](test_context& ctx) {
+        ctx.throws<opheap::module::sql::sql_error>([] { (void)opheap::module::sql::parse_statement("CREATE TABLE t (a BOGUS)"); });
+    }},
+    {"rejects a non-literal value in VALUES", [](test_context& ctx) {
+        ctx.throws<opheap::module::sql::sql_error>([] {
+            (void)opheap::module::sql::parse_statement("INSERT INTO t (a) VALUES (a)");
+        });
+    }},
+    {"rejects a missing comparison operator in WHERE", [](test_context& ctx) {
+        ctx.throws<opheap::module::sql::sql_error>([] {
+            (void)opheap::module::sql::parse_statement("SELECT * FROM t WHERE a AND b = 1");
+        });
+    }},
     }) {}
 };
 

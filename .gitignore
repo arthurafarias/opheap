@@ -5,3 +5,5 @@
 *.wal
 *.snapshot
 .DS_Store
+/opheap-comparative-benchmark-output/
+/opheap-benchmark/

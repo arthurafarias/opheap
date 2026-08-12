@@ -44,6 +44,37 @@ struct transaction_test : public test_group {
         a.commit();
         ctx.throws<conflict_error>([&] { b.commit(); });
     }},
+    {"root name must not be empty", [](test_context& ctx) {
+        auto directory = temporary_directory("tx-empty-name");
+        auto heap = opheap::heap::open({.path = directory});
+        auto tx = heap.begin();
+        ctx.throws<transaction_error>([&] { (void)tx.root(""); });
+    }},
+    {"an inactive transaction rejects further use", [](test_context& ctx) {
+        auto directory = temporary_directory("tx-inactive");
+        auto heap = opheap::heap::open({.path = directory});
+        auto tx = heap.begin();
+        tx.object_root()["n"] = 1;
+        tx.commit();
+        ctx.throws<transaction_error>([&] { (void)tx.root(); });
+        ctx.throws<transaction_error>([&] { tx.commit(); });
+    }},
+    {"root() rejects a payload with trailing bytes past the encoded value", [](test_context& ctx) {
+        auto directory = temporary_directory("tx-trailing-payload");
+        {
+            auto backend = make_default_storage_backend();
+            detail::heap_state state{opheap::heap_config{.path = directory}, backend};
+            detail::writer writer;
+            codec<value>::encode(writer, value{5});
+            auto payload = std::move(writer).take();
+            payload.push_back(std::byte{0}); // corrupt: trailing byte past the encoded value
+            detail::root_update update{"bad", 0, 1, std::string{codec<value>::type_name}, std::move(payload)};
+            state.commit(1, {update});
+        }
+        auto heap = opheap::heap::open({.path = directory});
+        auto tx = heap.begin();
+        ctx.throws<corruption_error>([&] { (void)tx.root("bad"); });
+    }},
     }) {}
 };
 
